@@ -1,0 +1,7 @@
+Server
+npm init -y
+npm install express
+npm install sqlite3
+npm install jsonwebtoken
+Client
+npm install jwt-decode

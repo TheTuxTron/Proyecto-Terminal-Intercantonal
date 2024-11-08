@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin</title>
+    <script defer src="/models/render.js"></script> <!-- Script de renderizado dinámico -->
+    <script src="/models/getInfo.js"></script> 
+    <link rel="stylesheet" href="/css/styleHomeAdmin.css">
+</head>
+<body>
+    <div id="header"></div> <!-- Header dinámico -->
+    <br><br>
+    <p id="userDisplay"></p>
+
+    <main>
+        <h1>Panel de Administración</h1>
+        <!-- Div donde se cargará el contenido dinámico -->
+        <div id="contenidoPrincipal"></div>
+        
+        <center><button onclick="document.location='homeUser.html'">Regresar al User</button></center>
+    </main>
+
+    <footer><div id="footer"></div></footer>
+</body>
+</html>

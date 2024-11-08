@@ -1,0 +1,72 @@
+/* Estilos generales del navbar */
+#miNav {
+  background-color: #007bff;
+  padding: 10px 0;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Abarca todo el ancho */
+  margin: 0;
+  position: fixed; /* Navbar fijo */
+  top: 0; /* Fija el navbar en la parte superior */
+  left: 0; /* Asegura que comience desde el borde izquierdo */
+  z-index: 1000; /* Asegura que se mantenga sobre otros elementos */
+}
+
+/* Listado sin estilos por defecto */
+#miNav ul {
+  list-style: none;
+  display: flex;
+  justify-content: space-between; /* Distribuye equitativamente */
+  align-items: center;
+  margin: 0;
+  padding: 0 20px; /* Espaciado interior para el contenido */
+  flex-wrap: wrap; /* Permite que los elementos se acomoden si no caben */
+}
+
+/* Estilo del logo */
+#licon img {
+  height: 40px;
+  width: 40px;
+}
+
+/* Estilos de los elementos de lista */
+#miNav li {
+  margin: 0 10px;
+}
+
+/* Enlaces del navbar */
+#miNav a {
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 16px;
+  transition: color 0.3s;
+}
+
+/* Efecto hover en los enlaces */
+#miNav a:hover {
+  color: #ffdd57;
+}
+
+/* Diseño responsivo para pantallas pequeñas */
+@media (max-width: 768px) {
+  #miNav ul {
+    flex-direction: column; /* Cambia a columna */
+    align-items: flex-start; /* Alinea los elementos al inicio */
+    padding-left: 20px;
+  }
+
+  #miNav li {
+    margin: 10px 0;
+  }
+
+  #miNav a {
+    font-size: 18px;
+  }
+}
+
+/* Estilo para evitar que el contenido principal se superponga al navbar */
+body {
+  margin-top: 60px; /* Asegura que el contenido no quede oculto debajo del navbar */
+}
+  
+  

@@ -1,0 +1,18 @@
+/* Estilos del contenedor del pie de página */
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 10px 0;
+    background-color: #007bff;
+    color: #ffffff;
+    text-align: center;
+    font-size: 14px;
+    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Estilos del texto en el pie de página */
+  footer p {
+    margin: 0;
+  }
+  
