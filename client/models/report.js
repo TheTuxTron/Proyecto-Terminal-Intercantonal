@@ -19,30 +19,33 @@
         // Obtener los valores de las fechas seleccionadas
         const fechaInicioStr = fechaInicioInput.value;
         const fechaFinStr = fechaFinInput.value;
-
+    
         // Validación: Asegurarse de que ambas fechas estén seleccionadas
         if (!fechaInicioStr || !fechaFinStr) {
             console.log("Por favor, selecciona ambas fechas.");
             return;
         }
-
+    
         try {
-            // Llamar a la función expuesta por Electron para obtener los registros
-            const registros = await window.electronAPI.getRegistros(fechaInicioStr, fechaFinStr);
+            // Realizar la solicitud a la API Express para obtener los registros
+            const response = await fetch(`/api/registro?startDate=${fechaInicioStr}&endDate=${fechaFinStr}`);
+            
+            if (!response.ok) {
+                throw new Error("Error al obtener los registros");
+            }
+    
+            const registros = await response.json();
             console.log("Registros obtenidos:", registros);
-
+    
+            // Filtrar los registros según la jornada
             const matutino = registros.filter(registro => registro.JORNADA === 'MAÑANA');
             const vespertino = registros.filter(registro => registro.JORNADA === 'TARDE');
-
-            // Use these arrays to populate your tables or further process the data
-            console.log("Registros Matutino:", matutino);
-            console.log("Registros Vespertino:", vespertino);
-
+    
             // Verificar que registros.matutino y registros.vespertino existan antes de generar tablas
-                generarTabla('informeMatutino', 'TURNO MAÑANA', matutino, fechaInicioStr, fechaFinStr, true);
-                generarTabla('informeVespertino', 'TURNO TARDE', vespertino, fechaInicioStr, fechaFinStr, false);
-                generarInformeCondensado(registros);
-
+            generarTabla('informeMatutino', 'TURNO MAÑANA', matutino, fechaInicioStr, fechaFinStr, true);
+            generarTabla('informeVespertino', 'TURNO TARDE', vespertino, fechaInicioStr, fechaFinStr, false);
+            generarInformeCondensado(registros);
+    
         } catch (error) {
             console.error("Error al cargar los registros:", error);
         }

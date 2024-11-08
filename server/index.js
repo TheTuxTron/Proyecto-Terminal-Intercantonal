@@ -99,3 +99,21 @@ app.get('/api/get-horas', (req, res) => {
     }
 });
 
+app.get('/api/registro', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = 'SELECT * FROM REGISTRO WHERE FECHA BETWEEN ? AND ?';
+
+    db.all(query, [startDate, endDate], (err, rows) => {
+        if (err) {
+            console.error("Error al obtener REGISTROS:", err);
+            return res.status(500).json({ error: 'Error al obtener REGISTROS' });
+        }
+
+        res.json(rows); // Devuelve los datos obtenidos
+    });
+});
