@@ -1,0 +1,7 @@
+# Ignorar node_modules, donde se guardan las dependencias
+node_modules/
+
+# Ignorar archivos de configuración de entorno
+.env
+
+package-lock.json
