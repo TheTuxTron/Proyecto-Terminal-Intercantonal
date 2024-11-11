@@ -71,11 +71,6 @@
                     return (hora > 13) || (hora === 13 && minutos > 0);
                 })
             ];
-            
-            console.log("Matutino:", matuttino);
-            console.log("Vespertino:", vespertino);
-        
-            
 
             // Generar las tablas para ambas jornadas
             generarTabla('informeMatutino', 'TURNO MAÑANA', matuttino, fechaInicioStr, fechaFinStr, true);
@@ -121,8 +116,6 @@
 
     function calcularSubtotales(datos, fechaInicioInput, fechaFinInput) {
         // Verificación de las fechas de entrada
-        console.log("Fecha de inicio:", fechaInicioInput);
-        console.log("Fecha de fin:", fechaFinInput);
     
         // Generar fechas de inicio y fin correctamente
         const fechaInicio = new Date(fechaInicioInput.split('T')[0]); // Aseguramos solo la parte de la fecha
@@ -147,15 +140,13 @@
             fechaActual.setDate(fechaActual.getDate() + 1); // Avanza al siguiente día
         }
     
-        console.log("Fechas generadas en el rango:", fechasGeneradas);
-    
         // Inicializar subtotales con 0 para frecuencias y pasajeros
         const subtotales = fechasGeneradas.map(fecha => ({
             fecha: fecha,
             frec: 0,
             pasaj: 0
         }));
-        console.log("Subtotales inicializados:", subtotales);
+
     
         // Ordenar los datos por fecha (si no están ordenados)
         datos.sort((a, b) => new Date(a.FECHA) - new Date(b.FECHA));
@@ -165,16 +156,13 @@
             // Aseguramos que FRECUENCIA y NUM_PASAJEROS sean arreglos
             const frecuencias = Array.isArray(fila.FRECUENCIA) ? fila.FRECUENCIA : [fila.FRECUENCIA];
             const numPasajeros = Array.isArray(fila.NUM_PASAJEROS) ? fila.NUM_PASAJEROS : [fila.NUM_PASAJEROS];
-            console.log("Procesando fila:", fila);
     
             // Convertir la fecha de la fila a "aaaa-mm-dd"
             const fechaOriginal = new Date(fila.FECHA);
             const fechaFila = fechaOriginal.toISOString().split('T')[0];
-            console.log("Fecha convertida de la fila:", fechaFila);
     
             // Buscar la fecha correspondiente en el arreglo de fechas generadas
             const indexFecha = fechasGeneradas.indexOf(fechaFila);
-            console.log("Índice de la fecha encontrada:", indexFecha);
     
             // Si encontramos la fecha en el arreglo de fechas generadas
             if (indexFecha !== -1) {
@@ -182,7 +170,6 @@
     
                 // Iterar sobre cada frecuencia registrada
                 frecuencias.forEach((frec, i) => {
-                    console.log("Frecuencia actual:", frec, "Número de pasajeros:", numPasajeros[i]);
                     if (frec !== 0) {  // Solo sumamos las frecuencias diferentes de cero
                         subtotales[indexFecha].frec += 1; // Contamos cuántas frecuencias diferentes de cero hay
                         subtotales[indexFecha].pasaj += parseInt(numPasajeros[i], 10) || 0; // Sumamos el número de pasajeros
@@ -192,7 +179,6 @@
         });
     
         // Si no hay datos para una fecha, se mantiene el valor de 0 en los subtotales
-        console.log("Subtotales calculados:", subtotales);
         return subtotales;
     }
     
@@ -254,9 +240,7 @@
 
     // Calcular los subtotales para los datos normales y extras
     const subtotalesNormales = calcularSubtotales(registrosNormales, fechaInicio, fechaFin);
-    console.log("subn", subtotalesNormales);
     const subtotalesExtras = calcularSubtotales(registrosExtras, fechaInicio, fechaFin);
-    console.log("sube", subtotalesExtras);
     
     let tabla = `
     <table>
@@ -316,13 +300,21 @@
         });
     });
 
-    // Fila de subtotales normales
+    // Calcular el total de pasajeros de los subtotales normales
+    const totalPasajerosSubtotalesNormales = subtotalesNormales.reduce((acc, subtotal) => acc + subtotal.pasaj, 0);
+
+    // Fila de subtotales normales (con la columna adicional)
     tabla += `
         <tr>
             <td class="subtotal" colspan="3">SUBTOTAL FRECUENCIAS</td>
             ${subtotalesNormales.map(subtotal => `<td class="resul">${subtotal.frec}</td><td class="resul">${subtotal.pasaj}</td>`).join('')}
+            <td class="resul"><strong>${totalPasajerosSubtotalesNormales}</strong></td>
         </tr>
     `;
+
+    // Calcular el total de pasajeros de los subtotales extras
+    const totalPasajerosSubtotalesExtras = subtotalesExtras.reduce((acc, subtotal) => acc + subtotal.pasaj, 0);
+
 
     // Fila de separación para los Extras
     tabla += `
@@ -356,11 +348,12 @@
         });
     });
 
-    // Fila de subtotales extras
+    // Fila de subtotales extras (con la columna adicional)
     tabla += `
         <tr>
-            <td class="subtotal" colspan="3"">SUBTOTAL EXTRAS</td>
+            <td class="subtotal" colspan="3">SUBTOTAL EXTRAS</td>
             ${subtotalesExtras.map(subtotal => `<td class="resul">${subtotal.frec}</td><td class="resul">${subtotal.pasaj}</td>`).join('')}
+            <td class="resul"><strong>${totalPasajerosSubtotalesExtras}</strong></td>
         </tr>
     `;
 
@@ -370,11 +363,15 @@
         pasaj: sub.pasaj + subtotalesExtras[index].pasaj
     }));
 
-    // Fila de total general (sumando los totales de normales y extras)
+    // Calcular el total general de pasajeros (sumando ambos subtotales)
+    const totalPasajerosGeneral = totalGeneral.reduce((acc, subtotal) => acc + subtotal.pasaj, 0);
+
+    // Fila de total general (con la columna adicional)
     tabla += `
         <tr class="total">
             <td colspan="3">TOTAL GENERAL</td>
             ${totalGeneral.map(sub => `<td>${sub.frec}</td><td>${sub.pasaj}</td>`).join('')}
+            <td class="total"><strong>${totalPasajerosGeneral}</strong></td>
         </tr>
     `;
     // Cerrar la tabla
