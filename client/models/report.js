@@ -41,9 +41,6 @@
             const registros = await response1.json();
             const extra = await response2.json();
             
-            console.log("Registros:", registros);
-            console.log("Extras obtenidos:", extra);
-            
             // Filtrar los datos matutinos y vespertinos de registros y extras
             const matuttino = [
                 ...registros.filter(registro => {
@@ -322,8 +319,8 @@
     // Fila de subtotales normales
     tabla += `
         <tr>
-            <td colspan="3" style="font-weight:bold; background-color:#f0f0f0;">SUBTOTAL FRECUENCIAS</td>
-            ${subtotalesNormales.map(subtotal => `<td>${subtotal.frec}</td><td>${subtotal.pasaj}</td>`).join('')}
+            <td class="subtotal" colspan="3">SUBTOTAL FRECUENCIAS</td>
+            ${subtotalesNormales.map(subtotal => `<td class="resul">${subtotal.frec}</td><td class="resul">${subtotal.pasaj}</td>`).join('')}
         </tr>
     `;
 
@@ -362,11 +359,24 @@
     // Fila de subtotales extras
     tabla += `
         <tr>
-            <td colspan="3" style="font-weight:bold; background-color:#f0f0f0;">SUBTOTAL EXTRAS</td>
-            ${subtotalesExtras.map(subtotal => `<td>${subtotal.frec}</td><td>${subtotal.pasaj}</td>`).join('')}
+            <td class="subtotal" colspan="3"">SUBTOTAL EXTRAS</td>
+            ${subtotalesExtras.map(subtotal => `<td class="resul">${subtotal.frec}</td><td class="resul">${subtotal.pasaj}</td>`).join('')}
         </tr>
     `;
 
+    // Ahora, sumamos los totales generales de las frecuencias y pasajeros
+    const totalGeneral = subtotalesNormales.map((sub, index) => ({
+        frec: sub.frec + subtotalesExtras[index].frec,
+        pasaj: sub.pasaj + subtotalesExtras[index].pasaj
+    }));
+
+    // Fila de total general (sumando los totales de normales y extras)
+    tabla += `
+        <tr class="total">
+            <td colspan="3">TOTAL GENERAL</td>
+            ${totalGeneral.map(sub => `<td>${sub.frec}</td><td>${sub.pasaj}</td>`).join('')}
+        </tr>
+    `;
     // Cerrar la tabla
     tabla += `</tbody></table>`;
 
