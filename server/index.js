@@ -218,3 +218,36 @@ app.get('/api/extra', (req, res) => {
     });
 });
 
+
+app.get('/api/condensado', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = `
+        SELECT
+            COOPERATIVA,
+            FECHA,
+            SUM(CASE WHEN CAST(SUBSTR(HORA, 1, 3) AS INTEGER) < 13 THEN 1 ELSE 0 END) AS frecuencias_manana,
+            SUM(CASE WHEN CAST(SUBSTR(HORA, 1, 3) AS INTEGER) >= 13 THEN 1 ELSE 0 END) AS frecuencias_tarde
+        FROM (
+            SELECT COOPERATIVA, HORA, FECHA FROM REGISTRO
+            WHERE FECHA BETWEEN ? AND ?
+            UNION ALL
+            SELECT COOPERATIVA, HORA, FECHA FROM REGISTRO_EXTRA
+            WHERE FECHA BETWEEN ? AND ?
+        ) AS todas_frecuencias
+        GROUP BY COOPERATIVA, FECHA;
+    `;
+
+    db.all(query, [startDate, endDate, startDate, endDate], (err, rows) => {
+        if (err) {
+            console.error("Error al obtener frecuencias:", err);
+            return res.status(500).json({ error: 'Error al obtener frecuencias' });
+        }
+
+        res.json(rows); // Devuelve los datos obtenidos
+    });
+});

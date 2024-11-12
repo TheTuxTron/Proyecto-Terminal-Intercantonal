@@ -1,18 +1,33 @@
- // Obtener las referencias de los inputs de fecha
-    const fechaInicioInput = document.getElementById('fechaInicio');
-    const fechaFinInput = document.getElementById('fechaFin');
-    let fechaInicio = null;
-    let fechaFin = null;
+// Obtener las referencias de los inputs de fecha
+const fechaInicioInput = document.getElementById('fechaInicio');
+const fechaFinInput = document.getElementById('fechaFin');
+let fechaInicio = null;
+let fechaFin = null;
 
-    // Escuchar cambios en los inputs de fecha
-    fechaInicioInput.addEventListener('change', (event) => {
-        fechaInicio = new Date(event.target.value);
-    });
+// Función para actualizar la restricción de la fecha de fin
+function actualizarRestriccionFechaFin() {
+    const fechaInicioStr = fechaInicioInput.value;
+    if (fechaInicioStr) {
+        const fechaInicio = new Date(fechaInicioStr);
+        fechaFinInput.min = fechaInicio.toISOString().split('T')[0];  // Establecer el mínimo de fechaFin como la fecha de inicio
+    }
+}
 
-    fechaFinInput.addEventListener('change', (event) => {
-        fechaFin = new Date(event.target.value);
-    });
+// Escuchar cambios en los inputs de fecha
+fechaInicioInput.addEventListener('change', (event) => {
+    fechaInicio = new Date(event.target.value);
+    actualizarRestriccionFechaFin();  // Actualizar la restricción de fechaFin
+});
 
+fechaFinInput.addEventListener('change', (event) => {
+    fechaFin = new Date(event.target.value);
+
+    // Verificar que la fecha de fin no sea menor que la de inicio
+    if (fechaFin < fechaInicio) {
+        alert("La fecha de fin no puede ser menor que la fecha de inicio.");
+        fechaFinInput.value = '';  // Limpiar la fecha de fin
+    }
+});
     async function cargarRegistros() {
         // Obtener los valores de las fechas seleccionadas
         const fechaInicioStr = fechaInicioInput.value;
@@ -77,7 +92,7 @@
             generarTabla('informeVespertino', 'TURNO TARDE', vespertino, fechaInicioStr, fechaFinStr, false);
     
             // Generar informe condensado
-            generarInformeCondensado(matuttino, vespertino, fechaInicioStr, fechaFinStr);
+            generarInformeCondensado('informeCondensado',fechaInicioStr, fechaFinStr);
     
         } catch (error) {
             console.error("Error al cargar los registros:", error);
@@ -126,8 +141,6 @@
             const fechaOriginal = new Date(fila.FECHA);
             return fechaOriginal.toISOString().split('T')[0]; // "aaaa-mm-dd"
         })));
-    
-        console.log("Fechas extraídas de los datos:", fechasDatos);
     
         // Inicializar un arreglo para almacenar las fechas completas dentro del rango
         const fechasGeneradas = [];
@@ -259,17 +272,11 @@
                     const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
                     const fechaOriginal = new Date(fecha);
                     const diaIndex = fechaOriginal.getDay() + 1;
-                
                     // Si el índice es mayor que 6, asignamos 'Domingo'
-                    const nombreDia = diasSemana[diaIndex > 6 ? 0 : diaIndex]; 
-                
+                    const nombreDia = diasSemana[diaIndex > 6 ? 0 : diaIndex];
                     const nuevaFecha = new Date(fechaOriginal);
                     nuevaFecha.setDate(nuevaFecha.getDate() + 1);
                     const numeroDia = nuevaFecha.getDate();
-                
-                    // Para depurar el resultado en consola
-                    console.log(`${nombreDia} ${numeroDia}`);
-                
                     return `<th colspan="2">${nombreDia} ${numeroDia}</th>`;
                 }).join('')}
                 
@@ -390,151 +397,161 @@
     container.innerHTML = tabla;
 }
 
+function generarInformeCondensado(containerId, fechaInicio, fechaFin) {
+    const container = document.getElementById(containerId);
 
+    // Función para obtener todas las fechas entre dos fechas (inicio y fin)
+    function getFechasRango(fechaInicio, fechaFin) {
+        const start = new Date(fechaInicio);
+        const end = new Date(fechaFin);
+        const fechas = [];
 
+        while (start <= end) {
+            fechas.push(start.toISOString().split('T')[0]); // Fecha en formato yyyy-mm-dd
+            start.setDate(start.getDate() + 1); // Incrementar un día
+        }
 
-function generarInformeCondensado(matuttino, vespertino, fechaInicioStr, fechaFinStr) {
-    // Lista de operadores
-    const operadores = matuttino.COOPERATIVA;
-
-    // Generar todas las fechas entre fechaInicio y fechaFin
-    const fechas = generarFechas(fechaInicioStr, fechaFinStr);
-
-    // Inicializar el resumen condensado con operadores y sus frecuencias por día
-    const resumenCondensado = operadores.map(operador => ({
-        operador,
-        dias: fechas.map(() => ({ am: 0, pm: 0 })), // Inicializar AM y PM en 0 para cada día
-        fCumplen: 0,
-        fNoCumplen: 0,
-        porcentajeCumplimiento: 0,
-        fSemanalCO: 0,
-        frecuenciasDiariasCO: 0
-    }));
-
-    // Función para acumular los datos por operador y turno
-    function acumularDatos(datos, tipoTurno) {
-        datos.forEach(registro => {
-            const fechaRegistro = registro.FECHA.split('T')[0];
-            const indiceFecha = fechas.indexOf(fechaRegistro);
-            const operador = registro.COOPERATIVA; // Suponiendo que los datos incluyen el nombre del operador
-
-            if (indiceFecha !== -1) {
-                const operadorData = resumenCondensado.find(op => op.operador === operador);
-                if (operadorData) {
-                    const frec = Array.isArray(registro.FRECUENCIA) ? registro.FRECUENCIA : [registro.FRECUENCIA];
-                    
-                    frec.forEach(f => {
-                        if (tipoTurno === 'matutino') {
-                            operadorData.dias[indiceFecha].am += f !== 0 ? 1 : 0;
-                        } else {
-                            operadorData.dias[indiceFecha].pm += f !== 0 ? 1 : 0;
-                        }
-                    });
-                }
-            }
-        });
+        return fechas;
     }
 
-    // Acumular datos de turnos matutino y vespertino
-    acumularDatos(matuttino, 'matutino');
-    acumularDatos(vespertino, 'vespertino');
+    function formatFrecuencias(rows, fechas) {
+        // Inicializamos un objeto para almacenar las frecuencias de cada cooperativa
+        const cooperativas = {};
 
-    // Calcular columnas adicionales (F. CUMPLEN, F. NO CUMPLEN, etc.)
-    resumenCondensado.forEach(op => {
-        // Sumar las frecuencias AM y PM para calcular F. CUMPLEN
-        op.fCumplen = op.dias.reduce((sum, dia) => sum + dia.am + dia.pm, 0);
+        // Inicializar las frecuencias para cada cooperativa
+        rows.forEach(row => {
+            if (!cooperativas[row.COOPERATIVA]) {
+                cooperativas[row.COOPERATIVA] = {
+                    frecuencias: fechas.map(() => ({ manana: 0, tarde: 0 })), // Inicializamos 0 para cada fecha
+                    totalManana: 0,
+                    totalTarde: 0
+                };
+            }
 
-        // F. NO CUMPLEN, suposiciones: cualquier día sin frecuencia cuenta como incumplido
-        const totalDias = fechas.length * 2; // Doble por AM y PM
-        op.fNoCumplen = totalDias - op.fCumplen;
+            const diaSemana = new Date(row.FECHA).getDay(); // Obtener el día de la semana (0: Domingo, 1: Lunes, etc.)
+            const indexDia = fechas.indexOf(row.FECHA); // Encontrar el índice de la fecha
 
-        // Calcular el porcentaje de cumplimiento
-        op.porcentajeCumplimiento = ((op.fCumplen / totalDias) * 100).toFixed(2);
-
-        // F. SEMANAL C.O y FRECUENCIAS DIARIAS C.O
-        // Suponiendo que son constantes o basadas en algún cálculo específico
-        op.fSemanalCO = 0; // Modificar con el cálculo específico
-        op.frecuenciasDiariasCO = 0; // Modificar con el cálculo específico
-    });
-
-    // Generar la tabla HTML para el informe condensado
-    let tablaCondensada = `
-    <table border="1">
-        <thead>
-            <tr>
-                <th colspan="15">INFORME SEMANAL CONDENSADO DE SALIDA DE FRECUENCIAS INTRACANTONALES</th>
-            </tr>
-            <tr>
-                <th colspan="15">SEMANA DEL: ${fechaInicioStr} al ${fechaFinStr}</th>
-            </tr>
-            <tr>
-                <th>OPERADORA</th>
-                ${fechas.map(fecha => {
-                    const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-                    const fechaOriginal = new Date(fecha);
-                    const diaIndex = fechaOriginal.getDay() + 1;
-                    // Si el índice es mayor que 6, asignamos 'Domingo'
-                    const nombreDia = diasSemana[diaIndex > 6 ? 0 : diaIndex]; 
-                    const nuevaFecha = new Date(fechaOriginal);
-                    nuevaFecha.setDate(nuevaFecha.getDate() + 1);
-                    const numeroDia = nuevaFecha.getDate();
-                    // Para depurar el resultado en consola
-                    console.log(`${nombreDia} ${numeroDia}`);
-                    return `<th colspan="2">${nombreDia} ${numeroDia}</th>`;
-                }).join('')}
-                <th>F. CUMPLEN</th>
-                <th>F. NO CUMPLEN</th>
-                <th>PORCENTAJE DE CUMPLIMIENTO</th>
-                <th>F. SEMANAL C.O</th>
-                <th>FRECUENCIAS DIARIAS C.O</th>
-            </tr>
-            <tr>
-                <th></th>
-                ${fechas.map(() => `<th>AM</th><th>PM</th>`).join('')}
-                <th></th><th></th><th></th><th></th><th></th>
-            </tr>
-        </thead>
-        <tbody>
-    `;
-
-    // Añadir filas de operadores y sus datos
-    resumenCondensado.forEach(op => {
-        tablaCondensada += `<tr><td>${op.operador}</td>`;
-        op.dias.forEach(dia => {
-            tablaCondensada += `<td>${dia.am}</td><td>${dia.pm}</td>`;
+            // Asignar las frecuencias en el día y hora correspondiente
+            if (indexDia !== -1) {
+                cooperativas[row.COOPERATIVA].frecuencias[indexDia] = {
+                    manana: row.frecuencias_manana || 0,
+                    tarde: row.frecuencias_tarde || 0
+                };
+                cooperativas[row.COOPERATIVA].totalManana += row.frecuencias_manana || 0;
+                cooperativas[row.COOPERATIVA].totalTarde += row.frecuencias_tarde || 0;
+            }
         });
-        tablaCondensada += `
-            <td>${op.fCumplen}</td>
-            <td>${op.fNoCumplen}</td>
-            <td>${op.porcentajeCumplimiento}</td>
-            <td>${op.fSemanalCO}</td>
-            <td>${op.frecuenciasDiariasCO}</td>
-        </tr>`;
-    });
 
-    // Calcular y añadir totales en la última fila
-    const totalFrecuenciasDiarias = resumenCondensado.reduce((sum, op) => sum + op.fCumplen, 0);
-    const totalNoCumplen = resumenCondensado.reduce((sum, op) => sum + op.fNoCumplen, 0);
-    const totalCumplimiento = ((totalFrecuenciasDiarias / (totalFrecuenciasDiarias + totalNoCumplen)) * 100).toFixed(2);
-    let totalFSemanalCO = 0; // Calcular basado en datos específicos
-    let totalFrecuenciasDiariasCO = 0; // Calcular basado en datos específicos
+        // Convertir el objeto de cooperativas a un arreglo para la tabla
+        const result = Object.keys(cooperativas).map(cooperativa => {
+            const data = cooperativas[cooperativa];
+            let totalFrecuencias = 0;
+            let totalManana = 0;
+            let totalTarde = 0;
 
-    tablaCondensada += `<tr><td>TOTAL FRECUENCIAS DIARIAS</td>`;
-    fechas.forEach((_, i) => {
-        const totalAM = resumenCondensado.reduce((sum, op) => sum + op.dias[i].am, 0);
-        const totalPM = resumenCondensado.reduce((sum, op) => sum + op.dias[i].pm, 0);
-        tablaCondensada += `<td>${totalAM}</td><td>${totalPM}</td>`;
-    });
-    tablaCondensada += `
-        <td>${totalFrecuenciasDiarias}</td>
-        <td>${totalNoCumplen}</td>
-        <td>${totalCumplimiento}</td>
-        <td>${totalFSemanalCO}</td>
-        <td>${totalFrecuenciasDiariasCO}</td>
-    </tr>`;
+            // Calcular los totales para cada cooperativa
+            data.frecuencias.forEach(dia => {
+                totalManana += dia.manana;
+                totalTarde += dia.tarde;
+            });
 
-    tablaCondensada += `</tbody></table>`;
+            totalFrecuencias = totalManana + totalTarde;
 
-    // Insertar la tabla en el contenedor correspondiente
-    document.getElementById('informeCondensado').innerHTML = tablaCondensada;
+            const porcentajeCumplimiento = totalFrecuencias === 0 ? 0 : ((totalManana / totalFrecuencias) * 100).toFixed(2);
+
+            return {
+                cooperativa: cooperativa,
+                frecuencias: data.frecuencias,
+                totalManana,
+                totalTarde,
+                porcentajeCumplimiento,
+                totalFrecuencias
+            };
+        });
+
+        return result;
+    }
+
+    // Realizar la solicitud fetch para obtener los datos
+    fetch(`/api/condensado?startDate=${fechaInicio}&endDate=${fechaFin}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al obtener los datos del backend');
+            }
+            return response.json();
+        })
+        .then(rows => {
+            // Obtener todas las fechas entre el rango
+            const fechas = getFechasRango(fechaInicio, fechaFin);
+
+            // Organizar los datos por cooperativa y formato adecuado
+            const data = formatFrecuencias(rows, fechas);
+            let tablaCondensada = `
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th colspan="15">INFORME SEMANAL CONDENSADO DE SALIDA DE FRECUENCIAS INTRACANTONALES</th>
+                        </tr>
+                        <tr>
+                            <th colspan="15">SEMANA DEL: ${fechaInicio} al ${fechaFin}</th>
+                        </tr>
+                        <tr>
+                            <th>OPERADORA</th>
+                            ${fechas.map(fecha => {
+                                const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                                const fechaOriginal = new Date(fecha);
+                                const diaIndex = fechaOriginal.getDay() + 1;
+                                // Si el índice es mayor que 6, asignamos 'Domingo'
+                                const nombreDia = diasSemana[diaIndex > 6 ? 0 : diaIndex]; 
+                                const nuevaFecha = new Date(fechaOriginal);
+                                nuevaFecha.setDate(nuevaFecha.getDate() + 1);
+                                const numeroDia = nuevaFecha.getDate();
+                                return `<th colspan="2">${nombreDia} ${numeroDia}</th>`;
+                            }).join('')}
+                            <th>F. CUMPLEN</th>
+                            <th>F. NO CUMPLEN</th>
+                            <th>PORCENTAJE DE CUMPLIMIENTO</th>
+                            <th>F. SEMANAL C.O</th>
+                            <th>FRECUENCIAS DIARIAS C.O</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            ${fechas.map(() => `<th>AM</th><th>PM</th>`).join('')}
+                            <th></th><th></th><th></th><th></th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // Generar las filas de la tabla para cada cooperativa
+            data.forEach(cooperativaData => {
+                tablaCondensada += `
+                    <tr>
+                        <td>${cooperativaData.cooperativa}</td>
+                        ${cooperativaData.frecuencias.map(dia => {
+                            return `
+                                <td>${dia.manana}</td>
+                                <td>${dia.tarde}</td>
+                            `;
+                        }).join('')}
+                        <td>${cooperativaData.totalManana}</td>
+                        <td>${cooperativaData.totalTarde}</td>
+                        <td>${cooperativaData.porcentajeCumplimiento}%</td>
+                        <td>${cooperativaData.totalFrecuencias}</td>
+                        <td>${cooperativaData.totalManana + cooperativaData.totalTarde}</td>
+                    </tr>
+                `;
+            });
+
+            tablaCondensada += `</tbody></table>`;
+            container.innerHTML = tablaCondensada;
+        })
+        .catch(error => {
+            console.error('Error al cargar los registros:', error);
+        });
 }
+
+
+// cooperativas[row.COOPERATIVA].frecuencias[diaSemana].manana = row.frecuencias_manana;
+// cooperativas[row.COOPERATIVA].frecuencias[diaSemana].tarde = row.frecuencias_tarde;
+
