@@ -179,3 +179,42 @@ app.get('/api/getHoras', (req, res) => {
         res.json(rows); // Devuelve las horas con la jornada filtrada
     });
 });
+
+app.get('/api/registro', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = 'SELECT * FROM REGISTRO WHERE FECHA BETWEEN ? AND ?';
+
+    db.all(query, [startDate, endDate], (err, rows) => {
+        if (err) {
+            console.error("Error al obtener REGISTROS:", err);
+            return res.status(500).json({ error: 'Error al obtener REGISTROS' });
+        }
+
+        res.json(rows); // Devuelve los datos obtenidos
+    });
+});
+
+app.get('/api/extra', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = 'SELECT * FROM REGISTRO_EXTRA WHERE FECHA BETWEEN ? AND ?';
+
+    db.all(query, [startDate, endDate], (err, rows) => {
+        if (err) {
+            console.error("Error al obtener extras:", err);
+            return res.status(500).json({ error: 'Error al obtener extras' });
+        }
+
+        res.json(rows); // Devuelve los datos obtenidos
+    });
+});
+
