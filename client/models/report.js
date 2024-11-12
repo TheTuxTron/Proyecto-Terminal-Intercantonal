@@ -390,12 +390,12 @@
     container.innerHTML = tabla;
 }
 
+
+
+
 function generarInformeCondensado(matuttino, vespertino, fechaInicioStr, fechaFinStr) {
     // Lista de operadores
-    const operadores = [
-        '2 DE OCTUBRE', 'ALIANZA SAN JUAN', 'CAMPESINOS UNIDOS', 'CONDOR',
-        'ÑUCA LLACTA', 'SAN ANDRES', 'SAN ISIDRO', 'ZULA OZOGOCHE'
-    ];
+    const operadores = matuttino.COOPERATIVA;
 
     // Generar todas las fechas entre fechaInicio y fechaFin
     const fechas = generarFechas(fechaInicioStr, fechaFinStr);
@@ -416,7 +416,7 @@ function generarInformeCondensado(matuttino, vespertino, fechaInicioStr, fechaFi
         datos.forEach(registro => {
             const fechaRegistro = registro.FECHA.split('T')[0];
             const indiceFecha = fechas.indexOf(fechaRegistro);
-            const operador = registro.OPERADOR; // Suponiendo que los datos incluyen el nombre del operador
+            const operador = registro.COOPERATIVA; // Suponiendo que los datos incluyen el nombre del operador
 
             if (indiceFecha !== -1) {
                 const operadorData = resumenCondensado.find(op => op.operador === operador);
@@ -473,21 +473,15 @@ function generarInformeCondensado(matuttino, vespertino, fechaInicioStr, fechaFi
                     const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
                     const fechaOriginal = new Date(fecha);
                     const diaIndex = fechaOriginal.getDay() + 1;
-                
                     // Si el índice es mayor que 6, asignamos 'Domingo'
                     const nombreDia = diasSemana[diaIndex > 6 ? 0 : diaIndex]; 
-                
                     const nuevaFecha = new Date(fechaOriginal);
                     nuevaFecha.setDate(nuevaFecha.getDate() + 1);
                     const numeroDia = nuevaFecha.getDate();
-                
                     // Para depurar el resultado en consola
                     console.log(`${nombreDia} ${numeroDia}`);
-                
                     return `<th colspan="2">${nombreDia} ${numeroDia}</th>`;
                 }).join('')}
-                
-                
                 <th>F. CUMPLEN</th>
                 <th>F. NO CUMPLEN</th>
                 <th>PORCENTAJE DE CUMPLIMIENTO</th>
