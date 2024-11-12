@@ -6,7 +6,7 @@
     <title>Admin</title>
     <script defer src="/models/renderU.js"></script> <!-- Archivo JavaScript donde cargaremos los HTML dinámicamente -->
     <script src="/models/getInfo.js"></script>
-    <link rel="stylesheet" href="/css/styleHomeAdmin.css">
+    <link rel="stylesheet" href="/css/styleHomeUser.css">
 </head>
     <div id="header"></div> <!-- Lugar donde se cargará el header -->
 <body>
@@ -18,36 +18,48 @@
         <h1>Registro de Viajes</h1>
         <form id="registroForm">
             <div>
+                <label for="tipoFrecuencia">Tipo de Frecuencia:</label>
+                <select name="tipoFrecuencia" id="tipoFrecuencia" required>
+                    <option value="" disabled selected>--------------</option>
+                    <option value="NORMAL">NORMAL</option>
+                    <option value="EXTRA">EXTRA</option>
+                </select>
+            </div>
+            <div>
                 <label for="cooperativa">Cooperativa:</label>
-                <select name="cooperativa" id="cooperativa" required></select>
+                <select name="cooperativa" id="cooperativa" required>
+                    <option value="" disabled selected>--------------</option>
+                </select>
             </div>
             <div>
                 <label for="parroquia">Destinos:</label>
-                <select name="parroquia" id="parroquia" required></select>
+                <select name="parroquia" id="parroquia" required>
+                    <option value="" disabled selected>--------------</option>
+                </select>
             </div>
             <div>
                 <label for="hora">Hora:</label>
-                <select name="hora" id="hora" required></select>
+                <div id="horaContainer">
+                    <select name="hora" id="hora" required>
+                        <option value="" disabled selected>--------------</option>
+                    </select>
+                </div>
             </div>
             <div>
                 <label for="fecha">Fecha:</label>
                 <input type="text" id="fecha" name="fecha" required disabled>
             </div>
             <div>
-                <label for="frecuencia">Frecuencia:</label>
+                <label for="frecuencia">Disco:</label>
                 <input type="text" id="frecuencia" name="frecuencia" required>
             </div>
             <div>
                 <label for="numPasajeros">Número de Pasajeros:</label>
-                <input type="number" id="numPasajeros" name="numPasajeros" required>
+                <input type="number" id="numPasajeros" name="numPasajeros" required min="0" required>
             </div>
             <div>
-                <label for="tipoFrecuencia">Tipo de Frecuencia:</label>
-                <select name="tipoFrecuencia" id="tipoFrecuencia" required>
-                    <option value="NORMAL">NORMAL</option>
-                    <option value="EXTRA">EXTRA</option>
-                </select>
-                <!--<input type="text" id="tipoFrecuencia" name="tipoFrecuencia" required>-->
+                <label for="numTicket">Número de Ticket:</label>
+                <input type="text" id="numTicket" name="numTicket" required>
             </div>
             <div>
                 <button type="submit">Registrar</button>
