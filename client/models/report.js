@@ -90,7 +90,7 @@ fechaFinInput.addEventListener('change', (event) => {
             // Generar las tablas para ambas jornadas
             generarTabla('informeMatutino', 'TURNO MAÑANA', matuttino, fechaInicioStr, fechaFinStr, true);
             generarTabla('informeVespertino', 'TURNO TARDE', vespertino, fechaInicioStr, fechaFinStr, false);
-    
+            obtenerValoresPorFecha(fechaInicioStr, fechaFinStr);
             // Generar informe condensado
             generarInformeCondensado('informeCondensado',fechaInicioStr, fechaFinStr);
     
@@ -192,9 +192,7 @@ fechaFinInput.addEventListener('change', (event) => {
         // Si no hay datos para una fecha, se mantiene el valor de 0 en los subtotales
         return subtotales;
     }
-    
-      
-    
+
     function generarTabla(containerId, titulo, datos, fechaInicio, fechaFin, esMatutino) {
         const container = document.getElementById(containerId);
         const diasSemana = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO', 'DOMINGO'];
@@ -328,6 +326,7 @@ fechaFinInput.addEventListener('change', (event) => {
         </tr>
     `;
 
+
     // Calcular el total de pasajeros de los subtotales extras
     const totalPasajerosSubtotalesExtras = subtotalesExtras.reduce((acc, subtotal) => acc + subtotal.pasaj, 0);
 
@@ -372,7 +371,6 @@ fechaFinInput.addEventListener('change', (event) => {
             <td class="resul"><strong>${totalPasajerosSubtotalesExtras}</strong></td>
         </tr>
     `;
-
     // Ahora, sumamos los totales generales de las frecuencias y pasajeros
     const totalGeneral = subtotalesNormales.map((sub, index) => ({
         frec: sub.frec + subtotalesExtras[index].frec,
@@ -397,41 +395,148 @@ fechaFinInput.addEventListener('change', (event) => {
     container.innerHTML = tabla;
 }
 
-function generarInformeCondensado(containerId, fechaInicio, fechaFin) {
-    const container = document.getElementById(containerId);
+// Función para formatear la fecha
+function formatearFecha(fecha) {
+    const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
-    // Función para obtener todas las fechas entre dos fechas (inicio y fin)
+    const d = new Date(fecha);
+    const diaSemana = dias[d.getDay()];
+    const dia = d.getDate();
+    const mes = meses[d.getMonth()];
+    const anio = d.getFullYear();
+
+    return `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)} ${dia} de ${mes.charAt(0).toUpperCase() + mes.slice(1)} ${anio}`;
+}
+
+function obtenerValoresPorFecha(fechaInicio, fechaFin) {
+    const container = document.getElementById('valores'); 
+
     function getFechasRango(fechaInicio, fechaFin) {
         const start = new Date(fechaInicio);
         const end = new Date(fechaFin);
         const fechas = [];
 
         while (start <= end) {
-            fechas.push(start.toISOString().split('T')[0]); // Fecha en formato yyyy-mm-dd
-            start.setDate(start.getDate() + 1); // Incrementar un día
+            fechas.push(start.toISOString().split('T')[0]);  
+            start.setDate(start.getDate() + 1);
+        }
+
+        return fechas;
+    }
+
+    const fechas = getFechasRango(fechaInicio, fechaFin);
+
+    fetch(`/api/valores?startDate=${fechaInicio}&endDate=${fechaFin}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Error al obtener datos');
+            return response.json();
+        })
+        .then(rows => {
+            const rowsByFecha = rows.reduce((acc, row) => {
+                acc[row.FECHA] = row;
+                return acc;
+            }, {});
+
+            let totalMananaArray = [];
+            let totalTarde = 0;
+            let totalDia = 0;
+
+            let tabla = `
+                <table>
+                    <thead>
+        <tr class="header">    
+            <th colspan="4">TERMINAL INTERCANTONAL DE RIOBAMBA - RECAUDACIÓN DE VALORES</th>
+                </tr>
+                <tr>
+                    <th rowspan="2">Fecha</th>
+                    <th rowspan="2">Total Mañana</th>
+                    <th rowspan="2">Total Tarde</th>
+                    <th rowspan="2">Total Día</th>
+                </tr>
+            </thead>
+                    <tbody>
+            `;
+
+            fechas.forEach(fecha => {
+                const row = rowsByFecha[fecha];  
+
+                const fechaFormateada = formatearFecha(fecha);  // Formateamos la fecha
+
+                if (row) {
+                    totalMananaArray.push(row.TOTAL_MANANA);
+                    totalTarde += row.TOTAL_TARDE;
+                    totalDia += row.TOTAL_DIA;
+
+                    tabla += `
+                        <tr>
+                            <td>${fechaFormateada}</td>
+                            <td>${row.TOTAL_MANANA}</td>
+                            <td>${row.TOTAL_TARDE}</td>
+                            <td>${row.TOTAL_DIA}</td>
+                        </tr>
+                    `;
+                } else {
+                    totalMananaArray.push(0);
+
+                    tabla += `
+                        <tr>
+                            <td>${fechaFormateada}</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            const totalManana = totalMananaArray.reduce((acc, value) => acc + value, 0);
+
+            tabla += `
+                        <tr>
+                            <td class="total">TOTAL VALORES RECAUDADOS</td>
+                            <td class="total">${totalManana}</td>
+                            <td class="total">${totalTarde}</td>
+                            <td class="total">${totalDia}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tabla;
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function generarInformeCondensado(containerId, fechaInicio, fechaFin) {
+    const container = document.getElementById(containerId);
+
+    function getFechasRango(fechaInicio, fechaFin) {
+        const start = new Date(fechaInicio);
+        const end = new Date(fechaFin);
+        const fechas = [];
+
+        while (start <= end) {
+            fechas.push(start.toISOString().split('T')[0]);
+            start.setDate(start.getDate() + 1);
         }
 
         return fechas;
     }
 
     function formatFrecuencias(rows, fechas) {
-        // Inicializamos un objeto para almacenar las frecuencias de cada cooperativa
         const cooperativas = {};
 
-        // Inicializar las frecuencias para cada cooperativa
         rows.forEach(row => {
             if (!cooperativas[row.COOPERATIVA]) {
                 cooperativas[row.COOPERATIVA] = {
-                    frecuencias: fechas.map(() => ({ manana: 0, tarde: 0 })), // Inicializamos 0 para cada fecha
+                    frecuencias: fechas.map(() => ({ manana: 0, tarde: 0 })),
                     totalManana: 0,
                     totalTarde: 0
                 };
             }
 
-            const diaSemana = new Date(row.FECHA).getDay(); // Obtener el día de la semana (0: Domingo, 1: Lunes, etc.)
-            const indexDia = fechas.indexOf(row.FECHA); // Encontrar el índice de la fecha
-
-            // Asignar las frecuencias en el día y hora correspondiente
+            const indexDia = fechas.indexOf(row.FECHA);
             if (indexDia !== -1) {
                 cooperativas[row.COOPERATIVA].frecuencias[indexDia] = {
                     manana: row.frecuencias_manana || 0,
@@ -442,25 +547,21 @@ function generarInformeCondensado(containerId, fechaInicio, fechaFin) {
             }
         });
 
-        // Convertir el objeto de cooperativas a un arreglo para la tabla
         const result = Object.keys(cooperativas).map(cooperativa => {
             const data = cooperativas[cooperativa];
-            let totalFrecuencias = 0;
             let totalManana = 0;
             let totalTarde = 0;
 
-            // Calcular los totales para cada cooperativa
             data.frecuencias.forEach(dia => {
                 totalManana += dia.manana;
                 totalTarde += dia.tarde;
             });
 
-            totalFrecuencias = totalManana + totalTarde;
-
+            const totalFrecuencias = totalManana + totalTarde;
             const porcentajeCumplimiento = totalFrecuencias === 0 ? 0 : ((totalManana / totalFrecuencias) * 100).toFixed(2);
 
             return {
-                cooperativa: cooperativa,
+                cooperativa,
                 frecuencias: data.frecuencias,
                 totalManana,
                 totalTarde,
@@ -472,7 +573,6 @@ function generarInformeCondensado(containerId, fechaInicio, fechaFin) {
         return result;
     }
 
-    // Realizar la solicitud fetch para obtener los datos
     fetch(`/api/condensado?startDate=${fechaInicio}&endDate=${fechaFin}`)
         .then(response => {
             if (!response.ok) {
@@ -481,11 +581,11 @@ function generarInformeCondensado(containerId, fechaInicio, fechaFin) {
             return response.json();
         })
         .then(rows => {
-            // Obtener todas las fechas entre el rango
             const fechas = getFechasRango(fechaInicio, fechaFin);
-
-            // Organizar los datos por cooperativa y formato adecuado
             const data = formatFrecuencias(rows, fechas);
+
+            let totalesPorDia = fechas.map(() => ({ totalManana: 0, totalTarde: 0 }));
+
             let tablaCondensada = `
                 <table border="1">
                     <thead>
@@ -523,16 +623,14 @@ function generarInformeCondensado(containerId, fechaInicio, fechaFin) {
                     <tbody>
             `;
 
-            // Generar las filas de la tabla para cada cooperativa
             data.forEach(cooperativaData => {
                 tablaCondensada += `
                     <tr>
                         <td>${cooperativaData.cooperativa}</td>
-                        ${cooperativaData.frecuencias.map(dia => {
-                            return `
-                                <td>${dia.manana}</td>
-                                <td>${dia.tarde}</td>
-                            `;
+                        ${cooperativaData.frecuencias.map((dia, index) => {
+                            totalesPorDia[index].totalManana += dia.manana;
+                            totalesPorDia[index].totalTarde += dia.tarde;
+                            return `<td>${dia.manana}</td><td>${dia.tarde}</td>`;
                         }).join('')}
                         <td>${cooperativaData.totalManana}</td>
                         <td>${cooperativaData.totalTarde}</td>
@@ -543,6 +641,14 @@ function generarInformeCondensado(containerId, fechaInicio, fechaFin) {
                 `;
             });
 
+            tablaCondensada += `
+                <tr>
+                    <td class="total"><strong>Total Frecuencias</strong></td>
+                    ${totalesPorDia.map(dia => `<td>${dia.totalManana}</td><td>${dia.totalTarde}</td>`).join('')}
+                    <td colspan="5"></td>
+                </tr>
+            `;
+
             tablaCondensada += `</tbody></table>`;
             container.innerHTML = tablaCondensada;
         })
@@ -550,8 +656,3 @@ function generarInformeCondensado(containerId, fechaInicio, fechaFin) {
             console.error('Error al cargar los registros:', error);
         });
 }
-
-
-// cooperativas[row.COOPERATIVA].frecuencias[diaSemana].manana = row.frecuencias_manana;
-// cooperativas[row.COOPERATIVA].frecuencias[diaSemana].tarde = row.frecuencias_tarde;
-
