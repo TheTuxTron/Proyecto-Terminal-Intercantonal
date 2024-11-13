@@ -218,3 +218,116 @@ app.get('/api/extra', (req, res) => {
     });
 });
 
+// Ruta para obtener el informe del usuario logueado
+app.get('/api/informe', (req, res) => {
+    const userId = req.query.userId; // Obtener el userId desde los query params
+
+    if (!userId) {
+        return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const query = `
+    WITH Totales AS (
+    SELECT 
+        SUM(VALOR) AS subtotal_REGISTRO 
+    FROM REGISTRO 
+    WHERE USUARIO = ? AND FECHA = date('now')
+),
+Totales_Extra AS (
+    SELECT 
+        SUM(VALOR) AS subtotal_REGISTRO_EXTRA 
+    FROM REGISTRO_EXTRA 
+    WHERE USUARIO = ? AND FECHA = date('now')
+)
+
+-- Consulta para REGISTRO con subtotal
+SELECT 
+    'REGISTRO' AS fuente,
+    COOPERATIVA,
+    USUARIO,
+    DESTINO,
+    HORA,
+    FECHA,
+    FRECUENCIA,
+    NUM_PASAJEROS,
+    TIPO_FREC,
+    '$' || printf("%.2f", VALOR) AS VALOR,  -- Concatenar el signo de dólar
+    NUM_TICKET
+FROM REGISTRO
+WHERE USUARIO = ? AND FECHA = date('now')
+
+UNION ALL
+
+-- Subtotal para REGISTRO
+SELECT 
+    'SUBTOTAL REGISTRO' AS fuente,
+    NULL AS COOPERATIVA,
+    NULL AS USUARIO,
+    NULL AS DESTINO,
+    NULL AS HORA,
+    NULL AS FECHA,
+    NULL AS FRECUENCIA,
+    NULL AS NUM_PASAJEROS,
+    NULL AS TIPO_FREC,
+    '$' || printf("%.2f", (SELECT subtotal_REGISTRO FROM Totales)) AS VALOR,  -- Concatenar el signo de dólar al subtotal
+    NULL AS NUM_TICKET
+
+UNION ALL
+
+-- Consulta para REGISTRO_EXTRA con subtotal
+SELECT 
+    'REGISTRO_EXTRA' AS fuente,
+    COOPERATIVA,
+    USUARIO,
+    DESTINO,
+    HORA,
+    FECHA,
+    FRECUENCIA,
+    NUM_PASAJEROS,
+    TIPO_FREC,
+    '$' || printf("%.2f", VALOR) AS VALOR,  -- Concatenar el signo de dólar
+    NUM_TICKET
+FROM REGISTRO_EXTRA
+WHERE USUARIO = ? AND FECHA = date('now')
+
+UNION ALL
+
+-- Subtotal para REGISTRO_EXTRA
+SELECT 
+    'SUBTOTAL REGISTRO_EXTRA' AS fuente,
+    NULL AS COOPERATIVA,
+    NULL AS USUARIO,
+    NULL AS DESTINO,
+    NULL AS HORA,
+    NULL AS FECHA,
+    NULL AS FRECUENCIA,
+    NULL AS NUM_PASAJEROS,
+    NULL AS TIPO_FREC,
+    '$' || printf("%.2f", (SELECT subtotal_REGISTRO_EXTRA FROM Totales_Extra)) AS VALOR,  -- Concatenar el signo de dólar al subtotal
+    NULL AS NUM_TICKET
+
+UNION ALL
+
+-- Fila de total general
+SELECT 
+    'TOTAL' AS fuente,
+    NULL AS COOPERATIVA,
+    NULL AS USUARIO,
+    NULL AS DESTINO,
+    NULL AS HORA,
+    NULL AS FECHA,
+    NULL AS FRECUENCIA,
+    NULL AS NUM_PASAJEROS,
+    NULL AS TIPO_FREC,
+    '$' || printf("%.2f", (SELECT subtotal_REGISTRO FROM Totales) + (SELECT subtotal_REGISTRO_EXTRA FROM Totales_Extra)) AS VALOR,  -- Concatenar el signo de dólar al total
+    NULL AS NUM_TICKET;
+
+    `;
+
+    db.all(query, [userId, userId, userId, userId], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error al ejecutar la consulta' });
+        }
+        res.json(rows);
+    });
+});

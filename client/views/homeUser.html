@@ -3,18 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin</title>
-    <script defer src="/models/renderU.js"></script> <!-- Archivo JavaScript donde cargaremos los HTML dinámicamente -->
+    <title>User</title>
+
+    <!-- Cargar jsPDF y autoTable al principio -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.17/jspdf.plugin.autotable.min.js"></script>
+
+    <script defer src="/models/renderU.js"></script>
     <script src="/models/getInfo.js"></script>
     <link rel="stylesheet" href="/css/styleHomeUser.css">
 </head>
-    <div id="header"></div> <!-- Lugar donde se cargará el header -->
 <body>
+    <div id="header"></div> <!-- Lugar donde se cargará el header -->
     <main>
         <p id="userDisplay"></p>
         <h1>Registro de Salidas de Buses</h1>
-        <form id="registroForm">
-            <div>
+
         <h1>Registro de Viajes</h1>
         <form id="registroForm">
             <div>
@@ -65,9 +69,17 @@
                 <button type="submit">Registrar</button>
             </div>
         </form>
+
+        <button id="btnGenerarInforme">Generar Informe</button>
     </main>
+
+    <!-- Cargar los scripts necesarios después de que se haya cargado el HTML -->
+    <script src="/models/generateDailyInf.js"></script>
     <script src="/models/regiterFrecuency.js"></script>
     <script src="/models/restrictions.js"></script>
+    
+    <footer>
+        <div id="footer"></div>
+    </footer>
 </body>
-<footer><div id="footer"></div></footer>
 </html>
