@@ -63,8 +63,13 @@ th {
 }
 
 .subtotal {
-    background-color: #e6e6e6;
+    background-color: #8ad7fd;
 }
+
+.resul {
+    background-color: #8ad7fd;
+}
+
 
 .total {
     background-color: #007bff;
@@ -76,6 +81,7 @@ th {
     justify-content: center;
     gap: 15px;
     margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 .btn-group button {

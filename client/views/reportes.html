@@ -18,25 +18,29 @@
     <div id="header"></div>
     <div class="container">
         <h1>Reportes Semanales</h1>
-    
+        
         <div class="controls">
             <label for="fechaInicio">Seleccione el rango de fechas:</label>
-            <input type="date" id="fechaInicio">
-            <input type="date" id="fechaFin">
+            <input type="date" id="fechaInicio" required>
+            <input type="date" id="fechaFin" required>
+        </div>
+        
+        <div class="btn-group">
+            <button id="generarInformeBtn" onclick="cargarRegistros()">Generar Informe</button>
         </div>
 
         <div id="informeMatutino"></div>
         <div id="informeVespertino"></div>
         <div id="informeCondensado"></div>
-    
-        <div class="btn-group">
-            <button id="generarInformeBtn" onclick="cargarRegistros()">Generar Informe</button>
-            <button onclick="generarPDF()">Generar PDF</button>
-        </div>
-
+        
         <div id="informeMatutino"></div>
         <div id="informeVespertino"></div>
         <div id="informeCondensado" class="informe-condensado"></div>
+        <div id="valores"></div>
+    </div>
+
+    <div class="btn-group">
+        <button onclick="generarPDF()">Generar PDF</button>
     </div>
     
     <script src="../models/report.js"></script>

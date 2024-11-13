@@ -179,3 +179,111 @@ app.get('/api/getHoras', (req, res) => {
         res.json(rows); // Devuelve las horas con la jornada filtrada
     });
 });
+
+app.get('/api/registro', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = 'SELECT * FROM REGISTRO WHERE FECHA BETWEEN ? AND ? ORDER BY HORA';
+
+    db.all(query, [startDate, endDate], (err, rows) => {
+        if (err) {
+            console.error("Error al obtener REGISTROS:", err);
+            return res.status(500).json({ error: 'Error al obtener REGISTROS' });
+        }
+
+        res.json(rows); // Devuelve los datos obtenidos
+    });
+});
+
+app.get('/api/extra', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = 'SELECT * FROM REGISTRO_EXTRA WHERE FECHA BETWEEN ? AND ? ORDER BY HORA';
+
+    db.all(query, [startDate, endDate], (err, rows) => {
+        if (err) {
+            console.error("Error al obtener extras:", err);
+            return res.status(500).json({ error: 'Error al obtener extras' });
+        }
+
+        res.json(rows); // Devuelve los datos obtenidos
+    });
+});
+
+
+app.get('/api/condensado', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = `
+        SELECT
+            COOPERATIVA,
+            FECHA,
+            SUM(CASE WHEN CAST(SUBSTR(HORA, 1, 3) AS INTEGER) < 13 THEN 1 ELSE 0 END) AS frecuencias_manana,
+            SUM(CASE WHEN CAST(SUBSTR(HORA, 1, 3) AS INTEGER) >= 13 THEN 1 ELSE 0 END) AS frecuencias_tarde
+        FROM (
+            SELECT COOPERATIVA, HORA, FECHA FROM REGISTRO
+            WHERE FECHA BETWEEN ? AND ?
+            UNION ALL
+            SELECT COOPERATIVA, HORA, FECHA FROM REGISTRO_EXTRA
+            WHERE FECHA BETWEEN ? AND ?
+        ) AS todas_frecuencias
+        GROUP BY COOPERATIVA, FECHA;
+    `;
+
+    db.all(query, [startDate, endDate, startDate, endDate], (err, rows) => {
+        if (err) {
+            console.error("Error al obtener frecuencias:", err);
+            return res.status(500).json({ error: 'Error al obtener frecuencias' });
+        }
+
+        res.json(rows); // Devuelve los datos obtenidos
+    });
+});
+
+app.get('/api/valores', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = `
+        SELECT 
+            FECHA,
+            SUM(CASE WHEN HORA <= '13:00' THEN VALOR ELSE 0 END) AS TOTAL_MANANA,
+            SUM(CASE WHEN HORA > '13:00' THEN VALOR ELSE 0 END) AS TOTAL_TARDE,
+            SUM(VALOR) AS TOTAL_DIA -- Columna adicional para el total del día
+        FROM (
+            SELECT FECHA, HORA, VALOR FROM REGISTRO_EXTRA
+            WHERE FECHA BETWEEN ? AND ? -- reemplaza con las fechas deseadas
+            UNION ALL
+            SELECT FECHA, HORA, VALOR FROM REGISTRO
+            WHERE FECHA BETWEEN ? AND ? -- reemplaza con las fechas deseadas
+        ) AS combined_records
+        GROUP BY 
+            FECHA
+        ORDER BY 
+            FECHA;
+    `;
+
+    db.all(query, [startDate, endDate, startDate, endDate], (err, rows) => {
+        if (err) {
+            console.error("Error al obtener los valores:", err);
+            return res.status(500).json({ error: 'Error al obtener los valores' });
+        }
+
+        res.json(rows); // Devuelve los datos obtenidos con total de mañana y tarde por fecha
+    });
+});
