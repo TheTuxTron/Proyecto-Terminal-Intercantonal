@@ -9,7 +9,6 @@ async function cargarOpciones() {
         if (!response.ok) throw new Error("Error al cargar cooperativas");
 
         const cooperativa = await response.json();
-        console.log("Nombres recibidos:", cooperativa); // Verifica la respuesta
 
         // Si cooperativa no es un arreglo, intenta convertirlo o manejarlo de otro modo
         if (!Array.isArray(cooperativa)) {

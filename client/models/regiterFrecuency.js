@@ -17,8 +17,6 @@ document.getElementById('registroForm').addEventListener('submit', async functio
         hora = `${hours}H${minutes}`;
     }
 
-    alert(hora);
-
     try {
         const response = await fetch('/api/registrarViaje', {
             method: 'POST',

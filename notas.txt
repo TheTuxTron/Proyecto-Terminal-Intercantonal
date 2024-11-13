@@ -5,3 +5,6 @@ npm install sqlite3
 npm install jsonwebtoken
 Client
 npm install jwt-decode
+npm install jspdf
+npm install jspdf-autotable
+npm install jspdf jspdf-autotable
