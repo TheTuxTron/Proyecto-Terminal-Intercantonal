@@ -587,69 +587,57 @@ function generarInformeCondensado(containerId, fechaInicio, fechaFin) {
             let totalesPorDia = fechas.map(() => ({ totalManana: 0, totalTarde: 0 }));
 
             let tablaCondensada = `
-                <table border="1">
-                    <thead>
-                        <tr>
-                            <th colspan="15">INFORME SEMANAL CONDENSADO DE SALIDA DE FRECUENCIAS INTRACANTONALES</th>
-                        </tr>
-                        <tr>
-                            <th colspan="15">SEMANA DEL: ${fechaInicio} al ${fechaFin}</th>
-                        </tr>
-                        <tr>
-                            <th>OPERADORA</th>
-                            ${fechas.map(fecha => {
-                                const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-                                const fechaOriginal = new Date(fecha);
-                                const diaIndex = fechaOriginal.getDay() + 1;
-                                // Si el índice es mayor que 6, asignamos 'Domingo'
-                                const nombreDia = diasSemana[diaIndex > 6 ? 0 : diaIndex]; 
-                                const nuevaFecha = new Date(fechaOriginal);
-                                nuevaFecha.setDate(nuevaFecha.getDate() + 1);
-                                const numeroDia = nuevaFecha.getDate();
-                                return `<th colspan="2">${nombreDia} ${numeroDia}</th>`;
-                            }).join('')}
-                            <th>F. CUMPLEN</th>
-                            <th>F. NO CUMPLEN</th>
-                            <th>PORCENTAJE DE CUMPLIMIENTO</th>
-                            <th>F. SEMANAL C.O</th>
-                            <th>FRECUENCIAS DIARIAS C.O</th>
-                        </tr>
-                        <tr>
-                            <th></th>
-                            ${fechas.map(() => `<th>AM</th><th>PM</th>`).join('')}
-                            <th></th><th></th><th></th><th></th><th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            data.forEach(cooperativaData => {
-                tablaCondensada += `
+            <table border="1">
+                <thead>
                     <tr>
-                        <td>${cooperativaData.cooperativa}</td>
-                        ${cooperativaData.frecuencias.map((dia, index) => {
-                            totalesPorDia[index].totalManana += dia.manana;
-                            totalesPorDia[index].totalTarde += dia.tarde;
-                            return `<td>${dia.manana}</td><td>${dia.tarde}</td>`;
-                        }).join('')}
-                        <td>${cooperativaData.totalManana}</td>
-                        <td>${cooperativaData.totalTarde}</td>
-                        <td>${cooperativaData.porcentajeCumplimiento}%</td>
-                        <td>${cooperativaData.totalFrecuencias}</td>
-                        <td>${cooperativaData.totalManana + cooperativaData.totalTarde}</td>
+                        <th colspan="${(fechas.length * 2)+2}">INFORME SEMANAL CONDENSADO DE SALIDA DE FRECUENCIAS INTRACANTONALES</th>
                     </tr>
-                `;
-            });
-
+                    <tr>
+                        <th colspan="${(fechas.length * 2)+2}">SEMANA DEL: ${fechaInicio} al ${fechaFin}</th>
+                    </tr>
+                    <tr>
+                        <th>OPERADORA</th>  <!-- Combina la celda de 'OPERADORA' con la fila de abajo -->
+                        ${fechas.map(fecha => {
+                            const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                            const fechaOriginal = new Date(fecha);
+                            const diaIndex = fechaOriginal.getDay() + 1;
+                            // Si el índice es mayor que 6, asignamos 'Domingo'
+                            const nombreDia = diasSemana[diaIndex > 6 ? 0 : diaIndex]; 
+                            const nuevaFecha = new Date(fechaOriginal);
+                            nuevaFecha.setDate(nuevaFecha.getDate() + 1);
+                            const numeroDia = nuevaFecha.getDate();
+                            return `<th colspan="2">${nombreDia} ${numeroDia}</th>`;
+                        }).join('')}
+                    </tr>
+                    <tr>
+                        <th></th>
+                        ${fechas.map(() => `<th>AM</th><th>PM</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        data.forEach(cooperativaData => {
             tablaCondensada += `
                 <tr>
-                    <td class="total"><strong>Total Frecuencias</strong></td>
-                    ${totalesPorDia.map(dia => `<td>${dia.totalManana}</td><td>${dia.totalTarde}</td>`).join('')}
-                    <td colspan="5"></td>
-                </tr>
+                    <td>${cooperativaData.cooperativa}</td>
+                    ${cooperativaData.frecuencias.map((dia, index) => {
+                        totalesPorDia[index].totalManana += dia.manana;
+                        totalesPorDia[index].totalTarde += dia.tarde;
+                        return `<td>${dia.manana}</td><td>${dia.tarde}</td>`;
+                    }).join('')}
             `;
-
-            tablaCondensada += `</tbody></table>`;
+        });
+        
+        tablaCondensada += `
+            <tr>
+                <td class="total"><strong>Total Frecuencias</strong></td>
+                ${totalesPorDia.map(dia => `<td class="total">${dia.totalManana}</td><td class="total">${dia.totalTarde}</td>`).join('')}
+            </tr>
+        `;
+        
+        tablaCondensada += `</tbody></table>`;
+        
             container.innerHTML = tablaCondensada;
         })
         .catch(error => {
