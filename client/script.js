@@ -57,3 +57,5 @@ async function obtenerContenidoProtegido() {
         alert("Error al acceder al contenido protegido: " + error);
     }
 }
+
+//"Al principio, solo Dios y yo sabíamos cómo funcionaba este código. Ahora, solo Dios lo sabe." TTT
