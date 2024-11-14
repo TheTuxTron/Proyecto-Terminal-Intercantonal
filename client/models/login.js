@@ -1,7 +1,7 @@
 // Capturar el evento 'submit' del formulario
 document.getElementById('loginForm').addEventListener('submit', async function (e) {
     e.preventDefault(); // Evitar que el formulario se envíe
-  
+    
     const cedula = document.getElementById('cedula').value;
     const contraseña = document.getElementById('contraseña').value;
   
