@@ -5,6 +5,7 @@
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
   width: 100%; /* Abarca todo el ancho */
   margin: 0;
+  font-family: Arial, sans-serif;
   position: fixed; /* Navbar fijo */
   top: 0; /* Fija el navbar en la parte superior */
   left: 0; /* Asegura que comience desde el borde izquierdo */
@@ -44,7 +45,25 @@
 
 /* Efecto hover en los enlaces */
 #miNav a:hover {
-  color: #ffdd57;
+  color: #da4040;
+}
+
+#informe {
+  display: inline-block; /* Para que funcione dentro de un <li> */
+  padding: 10px 15px; /* Espacio interno */
+  background-color: #007bff; /* Fondo claro */
+  border: 1px solid #010bff; /* Borde sutil */
+  border-radius: 4px; /* Bordes ligeramente redondeados */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+  font-family: Arial, sans-serif; /* Fuente */
+  font-weight: bold; /* Texto en negrita */
+  color: #333; /* Color de texto */
+  text-decoration: none; /* Elimina el subrayado */
+}
+
+#informe:hover {
+  background-color: #ffffff; /* Cambio de color al pasar el ratón */
+  cursor: pointer; /* Cambia el cursor a un puntero */
 }
 
 /* Diseño responsivo para pantallas pequeñas */

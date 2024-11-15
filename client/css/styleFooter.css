@@ -14,5 +14,6 @@ footer {
   /* Estilos del texto en el pie de página */
   footer p {
     margin: 0;
+    width: 100%;
   }
   

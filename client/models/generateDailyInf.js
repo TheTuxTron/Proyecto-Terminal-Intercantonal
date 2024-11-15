@@ -1,5 +1,4 @@
-document.getElementById("btnGenerarInforme").addEventListener("click", async() => {
-    
+async function generarInformeDiario() {    
     const { jsPDF } = window.jspdf; // Accedemos a jsPDF desde el espacio global
     const doc = new jsPDF();
 
@@ -62,7 +61,7 @@ document.getElementById("btnGenerarInforme").addEventListener("click", async() =
 
     // Descargar el PDF
     doc.save("InformeDiario_" + localStorage.getItem("nombre") + "_" + hora + ".pdf");
-});
+};
 
 // Función para cargar la imagen y convertirla a base64
 async function cargarImagenBase64(url) {

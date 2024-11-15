@@ -3,83 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User</title>
-
-    <!-- Cargar jsPDF y autoTable al principio -->
+    <link rel="icon" href="/images/logo.ico" type="image/x-icon">
+    <title>Registro de Salidas de Buses</title>
+    
+    <!-- Librerías -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.17/jspdf.plugin.autotable.min.js"></script>
-
-    <script defer src="/models/renderU.js"></script>
-    <script src="/models/getInfo.js"></script>
+    
+    <!-- CSS y JS -->
     <link rel="stylesheet" href="/css/styleHomeUser.css">
+    <script defer src="/models/renderU.js"></script>
+    <script defer src="/models/getInfo.js"></script>
 </head>
 <body>
-    <div id="header"></div> <!-- Lugar donde se cargará el header -->
-    <main>
-        <p id="userDisplay"></p>
-        <h1>Registro de Salidas de Buses</h1>
+    <!-- Header -->
+    <header>
+        <div id="header">Encabezado</div>
+    </header>
 
-        <h1>Registro de Viajes</h1>
-        <form id="registroForm">
-            <div>
-                <label for="tipoFrecuencia">Tipo de Frecuencia:</label>
-                <select name="tipoFrecuencia" id="tipoFrecuencia" required>
-                    <option value="" disabled selected>--------------</option>
-                    <option value="NORMAL">NORMAL</option>
-                    <option value="EXTRA">EXTRA</option>
-                </select>
-            </div>
-            <div>
-                <label for="cooperativa">Cooperativa:</label>
-                <select name="cooperativa" id="cooperativa" required>
-                    <option value="" disabled selected>--------------</option>
-                </select>
-            </div>
-            <div>
-                <label for="parroquia">Destinos:</label>
-                <select name="parroquia" id="parroquia" required>
-                    <option value="" disabled selected>--------------</option>
-                </select>
-            </div>
-            <div>
-                <label for="hora">Hora:</label>
-                <div id="horaContainer">
-                    <select name="hora" id="hora" required>
+    <!-- Contenido Principal -->
+    <main>
+        <section class="container">
+            <p id="userDisplay"></p>
+            <h1>Registro de Salidas de Buses</h1>
+            <form id="registroForm">
+                <div>
+                    <label for="fecha">Fecha:</label>
+                    <input type="text" id="fecha" name="fecha" required disabled>
+                </div>
+                <div>
+                    <label for="tipoFrecuencia">Tipo de Frecuencia:</label>
+                    <select name="tipoFrecuencia" id="tipoFrecuencia" required>
+                        <option value="" disabled selected>--------------</option>
+                        <option value="NORMAL">NORMAL</option>
+                        <option value="EXTRA">EXTRA</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="cooperativa">Cooperativa:</label>
+                    <select name="cooperativa" id="cooperativa" required>
                         <option value="" disabled selected>--------------</option>
                     </select>
                 </div>
-            </div>
-            <div>
-                <label for="fecha">Fecha:</label>
-                <input type="text" id="fecha" name="fecha" required disabled>
-            </div>
-            <div>
-                <label for="frecuencia">Disco:</label>
-                <input type="text" id="frecuencia" name="frecuencia" required>
-            </div>
-            <div>
-                <label for="numPasajeros">Número de Pasajeros:</label>
-                <input type="number" id="numPasajeros" name="numPasajeros" required min="0" required>
-            </div>
-            <div>
-                <label for="numTicket">Número de Ticket:</label>
-                <input type="text" id="numTicket" name="numTicket" required>
-            </div>
-            <div>
-                <button type="submit">Registrar</button>
-            </div>
-        </form>
-
-        <button id="btnGenerarInforme">Generar Informe</button>
+                <div>
+                    <label for="parroquia">Destinos:</label>
+                    <select name="parroquia" id="parroquia" required>
+                        <option value="" disabled selected>--------------</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="hora">Hora:</label>
+                    <div id="horaContainer">
+                        <select name="hora" id="hora" required>
+                            <option value="" disabled selected>--------------</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label for="frecuencia">Disco:</label>
+                    <input type="text" id="frecuencia" name="frecuencia" required>
+                </div>
+                <div>
+                    <label for="numPasajeros">Número de Pasajeros:</label>
+                    <input type="number" id="numPasajeros" name="numPasajeros" required min="0" required>
+                </div>
+                <div>
+                    <label for="numTicket">Número de Ticket:</label>
+                    <input type="text" id="numTicket" name="numTicket" required>
+                </div>
+                <div>
+                    <button type="submit">Registrar</button>
+                </div>
+            </form>
+        </section>
     </main>
 
-    <!-- Cargar los scripts necesarios después de que se haya cargado el HTML -->
-    <script src="/models/generateDailyInf.js"></script>
-    <script src="/models/regiterFrecuency.js"></script>
-    <script src="/models/restrictions.js"></script>
-    
+    <!-- Footer -->
     <footer>
         <div id="footer"></div>
     </footer>
+
+    <!-- Scripts -->
+    <script src="/models/generateDailyInf.js"></script>
+    <script src="/models/regiterFrecuency.js"></script>
+    <script src="/models/restrictions.js"></script>
 </body>
 </html>
+
+
