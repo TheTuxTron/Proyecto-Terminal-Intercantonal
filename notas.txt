@@ -8,3 +8,5 @@ npm install jwt-decode
 npm install jspdf
 npm install jspdf-autotable
 npm install jspdf jspdf-autotable
+Instala de manera local
+npm install -g pm2
