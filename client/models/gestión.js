@@ -39,16 +39,16 @@ async function cargarUsuarios(contenidoPrincipal) {
         const contenedorBusquedaYBoton = document.createElement('div');
 
         // Crear botón para mostrar el formulario
-        const btnNuevoUsuario = document.createElement('button');
-        btnNuevoUsuario.innerText = 'Nuevo Usuario';
-        btnNuevoUsuario.id = 'btnNuevoUsuario';
-        btnNuevoUsuario.addEventListener('click', () => {
-            formAgregarUsuario.style.display = formAgregarUsuario.style.display === 'none' ? 'block' : 'none';
-        });
+        //const btnNuevoUsuario = document.createElement('button');
+        // btnNuevoUsuario.innerText = 'Nuevo Usuario';
+        // btnNuevoUsuario.id = 'btnNuevoUsuario';
+        // btnNuevoUsuario.addEventListener('click', () => {
+        //     formAgregarUsuario.style.display = formAgregarUsuario.style.display === 'none' ? 'block' : 'none';
+        // });
 
         // Añadir barra de búsqueda y botón al contenedor
         contenedorBusquedaYBoton.appendChild(busqueda);
-        contenedorBusquedaYBoton.appendChild(btnNuevoUsuario);
+        //contenedorBusquedaYBoton.appendChild(btnNuevoUsuario);
 
         // Crear formulario para agregar usuario (inicialmente oculto)
         const formAgregarUsuario = document.createElement('form');
@@ -122,7 +122,7 @@ async function cargarUsuarios(contenidoPrincipal) {
         contenedorBusquedaYBoton.appendChild(tabla);
         contenedor.appendChild(titulo);
         contenedor.appendChild(busqueda);
-        contenedor.appendChild(btnNuevoUsuario);  // Agregar el botón "Nuevo Usuario"
+        //contenedor.appendChild(btnNuevoUsuario);  // Agregar el botón "Nuevo Usuario"
         contenedor.appendChild(formAgregarUsuario);  // Agregar el formulario al contenedor
         contenedor.appendChild(tabla);
         contenidoPrincipal.appendChild(contenedor);
