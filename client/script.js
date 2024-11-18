@@ -24,7 +24,7 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
             localStorage.setItem("nombre", username);
   
             // Redirigir según el rol
-            if (rol === "administrador") {
+            if (rol === "administrador" || rol === "secretaria" || rol === "superadmin") {
                 window.location.href = '../views/homeAdmin.html';
             } else if (rol === "usuario") {
                 window.location.href = '../views/homeUser.html';

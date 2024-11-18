@@ -611,3 +611,31 @@ app.put('/api/frecuenciase/:cooperativa/:hora/:fecha/:usuario/ticket', (req, res
         res.json({ message: 'Usuario actualizado correctamente' });
     });
 });
+
+
+// Definir la ruta para obtener los usuarios
+app.get('/api/responsable', (req, res) => {
+    // Realizar la consulta a la base de datos
+    db.all("SELECT * FROM USUARIOS WHERE rol == 'administrador'", [], (err, rows) => {
+        if (err) {
+            console.error('Error al obtener los usuarios:', err.message);
+            return res.status(500).json({ error: 'Error al obtener los registros' });
+        }
+        // Enviar los resultados como JSON
+        res.json(rows);
+        console.log(rows);
+    });
+});
+
+app.get('/api/secretaria', (req, res) => {
+    // Realizar la consulta a la base de datos
+    db.all("SELECT * FROM USUARIOS WHERE rol == 'secretaria'", [], (err, rows) => {
+        if (err) {
+            console.error('Error al obtener los usuarios:', err.message);
+            return res.status(500).json({ error: 'Error al obtener los registros' });
+        }
+        // Enviar los resultados como JSON
+        res.json(rows);
+        console.log(rows);
+    });
+});

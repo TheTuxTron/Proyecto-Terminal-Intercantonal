@@ -22,6 +22,35 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
         }
     };
 
+    const obtenerResponsables = async () => {
+        try {
+            const response = await fetch('/api/responsable'); // Cambia esto al endpoint correcto
+            if (!response.ok) {
+                throw new Error(`Error en la solicitud: ${response.statusText}`);
+            }
+            const data = await response.json();
+            return data.map((se) => se.NOMBRE); // Ajusta según la estructura de la respuesta
+            console.log(data);
+        } catch (error) {
+            console.error("Error al obtener los responsables:", error);
+            return [];
+        }
+    };
+
+    const obtenerSecretaria = async () => {
+        try {
+            const response = await fetch('/api/secretaria'); // Cambia esto al endpoint correcto
+            if (!response.ok) {
+                throw new Error(`Error en la solicitud: ${response.statusText}`);
+            }
+            const data = await response.json();
+            return data.map((se) => se.NOMBRE); // Ajusta según la estructura de la respuesta
+        } catch (error) {
+            console.error("Error al obtener los responsables:", error);
+            return [];
+        }
+    };
+
     // Encabezado que se repetirá en cada página
     const agregarEncabezado = () => {
         if (imagenBase64) {
@@ -87,17 +116,23 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
     agregarTabla('informeCondensado');
     agregarTabla('valores');
 
-    // Agregar las firmas de los responsables al final de la última página
+    const responsable = await obtenerResponsables();
     if (currentY + 50 > pageHeight - margin) {
         doc.addPage(); // Nueva página si no hay espacio
         agregarEncabezado(); // Repetir encabezado
     }
     currentY = pageHeight - 50; // Posición cercana al final de la página
     doc.setFontSize(10);
-    doc.text("Firma del Responsable 1: ___________________", margin, currentY);
-    currentY += 20; // Espacio entre firmas
-    doc.text("Firma del Responsable 2: ___________________", margin, currentY);
 
+    responsable.forEach((NOMBRE, index) => {
+        doc.text(`Firma del Responsable: ${NOMBRE+'__________________________________' || '__________________________________'}`, margin, currentY);
+        currentY += 20; // Espacio entre firmas
+    });
+
+    const secretaria = await obtenerSecretaria();
+    secretaria.forEach((NOMBRE, index) => {
+        doc.text(`Firma de Secretaria: ${NOMBRE+'__________________________________' || '__________________________________'}`, margin, currentY);
+    });
     // Guardar el PDF
     doc.save(`Informe_Frecuencias_${fechaInicioInput.value}_to_${fechaFinInput.value}.pdf`);
 });

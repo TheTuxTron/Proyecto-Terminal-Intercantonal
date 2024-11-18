@@ -66,6 +66,7 @@ async function cargarUsuarios(contenidoPrincipal) {
             <select id="rol" required>
                 <option value="usuario">Usuario</option>
                 <option value="administrador">Administrador</option>
+                <option value="secretaria">Secretaria</option>
             </select><br><br>
             <button type="submit">Registrar</button>
         `;
@@ -173,7 +174,8 @@ async function cargarUsuarios(contenidoPrincipal) {
                 <select>
                     <option value="usuario" ${rolCelda.textContent === 'usuario' ? 'selected' : ''}>Usuario</option>
                     <option value="administrador" ${rolCelda.textContent === 'administrador' ? 'selected' : ''}>Administrador</option>
-                </select>
+                    <option value="secretaria" ${rolCelda.textContent === 'secretaria' ? 'selected' : ''}>Secretaria</option>
+                    </select>
             `;
 
             btnEditar.style.display = 'none';
