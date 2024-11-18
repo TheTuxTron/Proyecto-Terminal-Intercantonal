@@ -246,34 +246,41 @@ async function cargarUsuarios(contenidoPrincipal) {
 
 async function cargarFrecuencias(contenidoPrincipal) {
     const contenedor = document.createElement('div');
-    
+
     try {
         const response = await fetch(`/api/frecuenciasg`);
-        if (!response.ok) {
-            throw new Error("Error al obtener los registros");
-        }
+        if (!response.ok) throw new Error("Error al obtener los registros");
         const frecuencias = await response.json();
 
         const busqueda = document.createElement('input');
         busqueda.type = 'text';
-        busqueda.placeholder = 'Buscar frecuencia por fecha aaaa-mm-dd';
+        busqueda.placeholder = 'Buscar frecuencia por fecha (aaaa-mm-dd)';
         busqueda.id = 'buscarFrecuencia';
         busqueda.addEventListener('input', filtrarFrecuencias);
-        
-        // Crear título
+
         const titulo = document.createElement('h2');
         titulo.innerText = 'Gestión de Frecuencias registradas';
 
-        // Crear contenedor para la barra de búsqueda y la tabla
         const contenedorBusquedaYBoton = document.createElement('div');
         contenedorBusquedaYBoton.appendChild(busqueda);
-        
+
         const tabla = document.createElement('table');
         tabla.id = 'tablaFrecuencias';
         const encabezado = document.createElement('tr');
-        encabezado.innerHTML = '<th>Cooperativa</th><th>Usuario</th><th>Destino</th><th>Hora</th><th>Fecha</th><th>Disco</th><th>Num. Pasajeros</th><th>Tipo Frecuencia</th><th>Valor</th><th>Num. Ticket</th><th>Acciones</th>';
+        encabezado.innerHTML = `
+            <th>Cooperativa</th>
+            <th>Usuario</th>
+            <th>Destino</th>
+            <th>Hora</th>
+            <th>Fecha</th>
+            <th>Disco</th>
+            <th>Num. Pasajeros</th>
+            <th>Tipo Frecuencia</th>
+            <th>Valor</th>
+            <th>Num. Ticket</th>
+            <th>Acciones</th>`;
         tabla.appendChild(encabezado);
-        
+
         frecuencias.forEach(frecuencia => {
             const fila = document.createElement('tr');
             fila.innerHTML = `
@@ -297,13 +304,8 @@ async function cargarFrecuencias(contenidoPrincipal) {
             const btnEditar = fila.querySelector('.editar');
             const btnGuardar = fila.querySelector('.guardar');
 
-            btnEditar.addEventListener('click', () => {
-                editarFila(fila, btnEditar, btnGuardar);
-            });
-
-            btnGuardar.addEventListener('click', () => {
-                guardarCambios(fila, btnEditar, btnGuardar);
-            });
+            btnEditar.addEventListener('click', () => editarFila(fila, btnEditar, btnGuardar));
+            btnGuardar.addEventListener('click', () => guardarCambios(fila, btnEditar, btnGuardar));
         });
 
         contenedorBusquedaYBoton.appendChild(tabla);
@@ -311,31 +313,27 @@ async function cargarFrecuencias(contenidoPrincipal) {
         contenedor.appendChild(contenedorBusquedaYBoton);
         contenidoPrincipal.appendChild(contenedor);
 
-        // Filtrar las frecuencias por fecha
         function filtrarFrecuencias() {
             const filtro = busqueda.value.toLowerCase();
-            const filas = document.querySelectorAll('#tablaFrecuencias tr');
+            const filas = Array.from(tabla.querySelectorAll('tr')).slice(1); // Excluir encabezado
             filas.forEach(fila => {
                 const fecha = fila.cells[4]?.innerText.toLowerCase() || ''; // Columna de fecha
                 fila.style.display = fecha.includes(filtro) ? '' : 'none';
             });
         }
 
-        // Editar los campos de la fila
         function editarFila(fila, btnEditar, btnGuardar) {
             const celdas = fila.querySelectorAll('td');
             celdas.forEach((celda, index) => {
-                if (index < 10) { // No editar la columna de acciones
+                if (index < 10) { // No editar columna de acciones
                     const valor = celda.textContent.trim();
                     celda.innerHTML = `<input type="text" value="${valor}">`;
                 }
             });
-
             btnEditar.style.display = 'none';
             btnGuardar.style.display = '';
         }
-        
-        // Guardar los cambios de la fila
+
         function guardarCambios(fila, btnEditar, btnGuardar) {
             const celdas = fila.querySelectorAll('td');
             const datos = {
@@ -346,44 +344,36 @@ async function cargarFrecuencias(contenidoPrincipal) {
                 fecha: celdas[4].querySelector('input').value,
                 frecuencia: celdas[5].querySelector('input').value,
                 pasajeros: celdas[6].querySelector('input').value,
-                tipo: celdas[7].querySelector('input').value,  // Aquí se obtiene el tipo
+                tipo: celdas[7].querySelector('input').value,
                 valor: celdas[8].querySelector('input').value,
                 ticket: celdas[9].querySelector('input').value
             };
-        
-            // Definir la ruta según el valor de 'tipo'
-            let ruta;
-            if (datos.tipo === 'EXTRA') {
-                ruta = `/api/frecuenciase/${datos.cooperativa}/${datos.hora}/${datos.fecha}/${datos.usuario}/${datos.ticket}`;
-            } else {
+            console.log(datos);
+            let ruta = `/api/frecuenciase/${datos.cooperativa}/${datos.hora}/${datos.fecha}/${datos.usuario}/${datos.ticket}`;
+            if (datos.tipo !== 'EXTRA') {
                 ruta = `/api/frecuenciasn/${datos.cooperativa}/${datos.hora}/${datos.fecha}/${datos.usuario}/${datos.ticket}`;
             }
-        
-            // Realizar la solicitud fetch para actualizar los datos
+
             fetch(ruta, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(datos),
             })
-            .then(response => {
-                if (response.ok) {
+                .then(response => {
+                    if (!response.ok) throw new Error("Error al actualizar los datos");
                     alert('Datos actualizados correctamente');
-                    // Actualizar las celdas de la tabla con los nuevos valores
                     celdas.forEach((celda, index) => {
                         if (index < 10) {
                             celda.textContent = celdas[index].querySelector('input').value;
                         }
                     });
-                    // Ocultar el botón de guardar y mostrar el de editar
                     btnGuardar.style.display = 'none';
                     btnEditar.style.display = '';
-                } else {
+                })
+                .catch(error => {
+                    console.error('Error al actualizar los datos:', error);
                     alert('Error al actualizar los datos');
-                }
-            })
-            .catch(error => {
-                console.error('Error al actualizar los datos:', error);
-            });
+                });
         }
     } catch (error) {
         console.error('Error cargando las frecuencias:', error);
