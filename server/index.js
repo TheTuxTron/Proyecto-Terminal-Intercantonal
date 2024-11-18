@@ -531,84 +531,112 @@ app.get('/api/frecuenciasg', (req, res) => {
     });
 });
 
-app.put('/api/frecuenciasn/:cooperativa/:hora/:fecha/:usuario/ticket', (req, res) => {
-    const { cooperativa, hora, fecha, usuario } = req.params; // Extraer parámetros de la ruta
-    const { nombre, celular, rol } = req.body; // Extraer los datos del cuerpo de la solicitud
+app.put('/api/frecuenciasn/:cooperativa/:hora/:fecha/:usuario/:ticket', (req, res) => { 
+    const { cooperativa, hora, fecha, usuario, ticket } = req.params; // Incluye 'ticket' aquí
+    const { 
+        destino, 
+        frecuencia, 
+        pasajeros: num_pasajeros, 
+        tipo: tipo_frec, 
+        valor, 
+        ticket: num_ticket 
+    } = req.body;
+    
 
-    // Definir la consulta SQL para actualizar los datos
+    if (!destino || !frecuencia || !num_pasajeros || !tipo_frec || !valor || !num_ticket) {
+        return res.status(400).json({ error: 'Faltan datos en el cuerpo de la solicitud' });
+    }
+    console.log('Datos de la URL:', req.params); // Para depuración
+    console.log('Datos del cuerpo:', req.body); // Para depuración
+
     const sql = `
-        UPDATE REGISTRO
-        SET 
-            COOPERATIVA = ?, 
-            USUARIO = ?, 
-            DESTINO = ?, 
-            HORA = ?, 
-            FECHA = ?, 
-            FRECUENCIA = ?, 
-            NUM_PASAJEROS = ?, 
-            TIPO_FREC = ?, 
-            VALOR = ?, 
-            NUM_TICKET = ?
-        WHERE 
-            COOPERATIVA = ? 
-            AND HORA = ? 
-            AND FECHA = ? 
-            AND USUARIO = ?;
-    `;
+    UPDATE REGISTRO
+    SET 
+        DESTINO = ?, 
+        FRECUENCIA = ?, 
+        NUM_PASAJEROS = ?, 
+        TIPO_FREC = ?, 
+        VALOR = ?
+    WHERE 
+        COOPERATIVA = ? 
+        AND HORA = ? 
+        AND FECHA = ? 
+        AND USUARIO = ? 
+        AND NUM_TICKET = ?;
+`;
 
-    // Ejecutar la consulta con los valores proporcionados
-    db.run(sql, [nombre, celular, rol, cooperativa, hora, fecha, usuario], function (err) {
+const params = [
+    destino, frecuencia, num_pasajeros, tipo_frec, valor, // Campos a actualizar
+    cooperativa, hora, fecha, usuario, num_ticket // Condiciones
+];
+
+
+    db.run(sql, params, function (err) {
         if (err) {
             console.error('Error en la base de datos:', err.message);
-            return res.status(500).json({ error: 'Error al actualizar el usuario', detalles: err.message });
+            return res.status(500).json({ error: 'Error al actualizar el registro', detalles: err.message });
         }
-        
+
         if (this.changes === 0) {
             return res.status(404).json({ error: 'No se encontró el registro para actualizar' });
         }
 
-        res.json({ message: 'Usuario actualizado correctamente' });
+        res.json({ message: 'Registro actualizado correctamente' });
     });
 });
 
 
-app.put('/api/frecuenciase/:cooperativa/:hora/:fecha/:usuario/ticket', (req, res) => {
-    const { cooperativa, hora, fecha, usuario } = req.params; // Extraer parámetros de la ruta
-    const { nombre, celular, rol } = req.body; // Extraer los datos del cuerpo de la solicitud
+app.put('/api/frecuenciase/:cooperativa/:hora/:fecha/:usuario/:ticket', (req, res) => { 
+    const { cooperativa, hora, fecha, usuario, ticket } = req.params; // Incluye 'ticket' aquí
+    const { 
+        destino, 
+        frecuencia, 
+        pasajeros: num_pasajeros, 
+        tipo: tipo_frec, 
+        valor, 
+        ticket: num_ticket 
+    } = req.body;
+    
 
-    // Definir la consulta SQL para actualizar los datos
+    if (!destino || !frecuencia || !num_pasajeros || !tipo_frec || !valor || !num_ticket) {
+        return res.status(400).json({ error: 'Faltan datos en el cuerpo de la solicitud' });
+    }
+    console.log('Datos de la URL:', req.params); // Para depuración
+    console.log('Datos del cuerpo:', req.body); // Para depuración
+
     const sql = `
-        UPDATE REGISTRO_EXTRA
-        SET 
-            COOPERATIVA = ?, 
-            USUARIO = ?, 
-            DESTINO = ?, 
-            HORA = ?, 
-            FECHA = ?, 
-            FRECUENCIA = ?, 
-            NUM_PASAJEROS = ?, 
-            TIPO_FREC = ?, 
-            VALOR = ?, 
-            NUM_TICKET = ?
-        WHERE 
-            COOPERATIVA = ? 
-            AND HORA = ? 
-            AND FECHA = ? 
-            AND USUARIO = ?;
-    `;
+    UPDATE REGISTRO_EXTRA
+    SET 
+        DESTINO = ?, 
+        FRECUENCIA = ?, 
+        NUM_PASAJEROS = ?, 
+        TIPO_FREC = ?, 
+        VALOR = ?
+    WHERE 
+        COOPERATIVA = ? 
+        AND HORA = ? 
+        AND FECHA = ? 
+        AND USUARIO = ? 
+        AND NUM_TICKET = ?;
+`;
 
-    // Ejecutar la consulta con los valores proporcionados
-    db.run(sql, [nombre, celular, rol, cooperativa, hora, fecha, usuario], function (err) {
+const params = [
+    destino, frecuencia, num_pasajeros, tipo_frec, valor, // Campos a actualizar
+    cooperativa, hora, fecha, usuario, num_ticket // Condiciones
+];
+
+
+    db.run(sql, params, function (err) {
         if (err) {
             console.error('Error en la base de datos:', err.message);
-            return res.status(500).json({ error: 'Error al actualizar el usuario', detalles: err.message });
+            return res.status(500).json({ error: 'Error al actualizar el registro', detalles: err.message });
         }
-        
+
         if (this.changes === 0) {
             return res.status(404).json({ error: 'No se encontró el registro para actualizar' });
         }
 
-        res.json({ message: 'Usuario actualizado correctamente' });
+        res.json({ message: 'Registro actualizado correctamente' });
     });
 });
 
