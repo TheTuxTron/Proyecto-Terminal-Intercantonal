@@ -17,6 +17,27 @@ document.getElementById('registroForm').addEventListener('submit', async functio
         hora = `${hours}H${minutes}`;
     }
 
+    // Mostrar confirmación con los datos
+    const mensaje = `
+        Se enviarán los siguientes datos:
+        - Cooperativa: ${cooperativa}
+        - Usuario: ${usuario}
+        - Destino: ${destino}
+        - Hora: ${hora}
+        - Fecha: ${fecha}
+        - Frecuencia: ${frecuencia}
+        - Número de Pasajeros: ${numPasajeros}
+        - Tipo de Frecuencia: ${tipoFrecuencia}
+        - Valor: ${valor}
+        - Número de Ticket: ${numTicket}
+        
+        ¿Desea continuar?
+    `;
+
+    if (!confirm(mensaje)) {
+        return; // Si el usuario cancela, no se realiza la operación
+    }
+
     try {
         const response = await fetch('/api/registrarViaje', {
             method: 'POST',
