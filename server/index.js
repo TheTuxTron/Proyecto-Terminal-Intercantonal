@@ -49,7 +49,13 @@ app.get('/api/protegido', verificarToken, (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+    console.log("Intenta carga")
+    try{
+        console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+    }catch(error){
+        console.log("Error al iniciar "+error);
+    }
+    
 });
 
 app.get('/api/get-options', (req, res) => {
@@ -404,7 +410,7 @@ SELECT
 // Definir la ruta para obtener los usuarios
 app.get('/api/usuarios', (req, res) => {
     // Realizar la consulta a la base de datos
-    db.all('SELECT * FROM usuarios', [], (err, rows) => {
+    db.all("SELECT * FROM usuarios WHERE rol != 'superadmin'", [], (err, rows) => {
         if (err) {
             console.error('Error al obtener los usuarios:', err.message);
             return res.status(500).json({ error: 'Error al obtener los registros' });
@@ -413,5 +419,195 @@ app.get('/api/usuarios', (req, res) => {
         // Enviar los resultados como JSON
         res.json(rows);
         console.log(rows);
+    });
+});
+
+app.put('/api/usuarios/:cedula', (req, res) => {
+    const cedula = req.params.cedula;
+    const { nombre, celular, rol } = req.body;
+
+    const sql = `UPDATE USUARIOS SET NOMBRE = ?, NUMERO_CELULAR = ?, ROL = ? WHERE CEDULA = ?`;
+    db.run(sql, [nombre, celular, rol, cedula], function (err) {
+        if (err) {
+            console.error('Error en la base de datos:', err.message);
+            return res.status(500).json({ error: 'Error al actualizar el usuario', detalles: err.message });
+        }
+        res.json({ message: 'Usuario actualizado correctamente' });
+    });
+    
+});
+
+app.post('/api/registrarusuario', (req, res) => {
+    const { cedula, nombre, celular, rol } = req.body;
+
+    if (!cedula || !nombre || !celular || !rol) {
+        return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+    }
+
+    // Verificar si el usuario ya existe
+    db.get(`SELECT * FROM USUARIOS WHERE CEDULA = ?`, [cedula], (err, row) => {
+        if (err) {
+            console.error("Error al consultar la base de datos:", err);
+            return res.status(500).json({ error: 'Error al verificar si el usuario existe' });
+        }
+        if (row) {
+            return res.status(400).json({ success: false, error: "El usuario ya está registrado." });
+        } else {
+            // Insertar el nuevo usuario
+            const query = `INSERT INTO USUARIOS (CEDULA, NOMBRE, NUMERO_CELULAR, ROL, CONTRASEÑA) 
+                           VALUES (?, ?, ?, ?, ?)`;
+            db.run(query, [cedula, nombre, celular, rol, "1234"], function (err) {
+                if (err) {
+                    console.error("Error al registrar el usuario:", err);
+                    return res.status(500).json({ error: 'Error al registrar el usuario' });
+                }
+                res.status(201).json({ success: true, message: 'Usuario registrado con éxito' });
+            });
+        }
+    });
+});
+
+
+app.delete('/api/usuarios/:cedula', (req, res) => {
+    const cedula = req.params.cedula;
+
+    // SQL para eliminar un usuario basado en la cédula
+    const sql = `DELETE FROM USUARIOS WHERE CEDULA = ?`;
+
+    db.run(sql, [cedula], function (err) {
+        if (err) {
+            console.error('Error en la base de datos:', err.message);
+            return res.status(500).json({ error: 'Error al eliminar el usuario', detalles: err.message });
+        }
+        if (this.changes === 0) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        res.json({ message: 'Usuario eliminado correctamente' });
+    });
+});
+
+// Definir la ruta para obtener las frecuencias
+app.get('/api/frecuenciasg', (req, res) => {
+    // Realizar la consulta a la base de datos
+    db.all(`
+        SELECT 
+            R.COOPERATIVA, 
+            R.USUARIO, 
+            R.DESTINO, 
+            R.HORA, 
+            R.FECHA, 
+            R.FRECUENCIA, 
+            R.NUM_PASAJEROS, 
+            R.TIPO_FREC, 
+            R.VALOR, 
+            R.NUM_TICKET
+        FROM 
+            "REGISTRO" R
+
+        UNION ALL
+
+        SELECT 
+            RE.COOPERATIVA, 
+            RE.USUARIO, 
+            RE.DESTINO, 
+            RE.HORA, 
+            RE.FECHA, 
+            RE.FRECUENCIA, 
+            RE.NUM_PASAJEROS, 
+            RE.TIPO_FREC, 
+            RE.VALOR, 
+            RE.NUM_TICKET
+        FROM 
+            "REGISTRO_EXTRA" RE;
+    `, [], (err, rows) => {
+        if (err) {
+            console.error('Error al obtener las frecuencias:', err.message);
+            return res.status(500).json({ error: 'Error al obtener las frecuencias' });
+        }
+
+        // Enviar los resultados como JSON
+        res.json(rows);
+        console.log(rows);
+    });
+});
+
+app.put('/api/frecuenciasn/:cooperativa/:hora/:fecha/:usuario/ticket', (req, res) => {
+    const { cooperativa, hora, fecha, usuario } = req.params; // Extraer parámetros de la ruta
+    const { nombre, celular, rol } = req.body; // Extraer los datos del cuerpo de la solicitud
+
+    // Definir la consulta SQL para actualizar los datos
+    const sql = `
+        UPDATE REGISTRO
+        SET 
+            COOPERATIVA = ?, 
+            USUARIO = ?, 
+            DESTINO = ?, 
+            HORA = ?, 
+            FECHA = ?, 
+            FRECUENCIA = ?, 
+            NUM_PASAJEROS = ?, 
+            TIPO_FREC = ?, 
+            VALOR = ?, 
+            NUM_TICKET = ?
+        WHERE 
+            COOPERATIVA = ? 
+            AND HORA = ? 
+            AND FECHA = ? 
+            AND USUARIO = ?;
+    `;
+
+    // Ejecutar la consulta con los valores proporcionados
+    db.run(sql, [nombre, celular, rol, cooperativa, hora, fecha, usuario], function (err) {
+        if (err) {
+            console.error('Error en la base de datos:', err.message);
+            return res.status(500).json({ error: 'Error al actualizar el usuario', detalles: err.message });
+        }
+        
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'No se encontró el registro para actualizar' });
+        }
+
+        res.json({ message: 'Usuario actualizado correctamente' });
+    });
+});
+
+
+app.put('/api/frecuenciase/:cooperativa/:hora/:fecha/:usuario/ticket', (req, res) => {
+    const { cooperativa, hora, fecha, usuario } = req.params; // Extraer parámetros de la ruta
+    const { nombre, celular, rol } = req.body; // Extraer los datos del cuerpo de la solicitud
+
+    // Definir la consulta SQL para actualizar los datos
+    const sql = `
+        UPDATE REGISTRO_EXTRA
+        SET 
+            COOPERATIVA = ?, 
+            USUARIO = ?, 
+            DESTINO = ?, 
+            HORA = ?, 
+            FECHA = ?, 
+            FRECUENCIA = ?, 
+            NUM_PASAJEROS = ?, 
+            TIPO_FREC = ?, 
+            VALOR = ?, 
+            NUM_TICKET = ?
+        WHERE 
+            COOPERATIVA = ? 
+            AND HORA = ? 
+            AND FECHA = ? 
+            AND USUARIO = ?;
+    `;
+
+    // Ejecutar la consulta con los valores proporcionados
+    db.run(sql, [nombre, celular, rol, cooperativa, hora, fecha, usuario], function (err) {
+        if (err) {
+            console.error('Error en la base de datos:', err.message);
+            return res.status(500).json({ error: 'Error al actualizar el usuario', detalles: err.message });
+        }
+        
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'No se encontró el registro para actualizar' });
+        }
+
+        res.json({ message: 'Usuario actualizado correctamente' });
     });
 });

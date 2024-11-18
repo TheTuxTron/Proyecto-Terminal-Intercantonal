@@ -86,6 +86,91 @@
 /* Estilo para evitar que el contenido principal se superponga al navbar */
 body {
   margin-top: 60px; /* Asegura que el contenido no quede oculto debajo del navbar */
+  margin-bottom: 60px;
 }
+
+#buscarUsuario {
+  padding: 8px;
+  font-size: 14px;
+  width: 100%;  /* Ocupa todo el ancho disponible */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 10px;  /* Espacio debajo de la barra de búsqueda */
+}
+
+#btnNuevoUsuario {
+  margin-top: 10px;  /* Espacio encima del botón */
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #0056b3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
+
+#btnNuevoUsuario:hover {
+  background-color: #007bff;  /* Cambio de color al pasar el mouse */
+}
+
+#formAgregarUsuario {
+  margin-top: 20px;
+}
+
+
   
-  
+#formAgregarUsuario {
+  gap: 15px;  /* Espacio entre los elementos */
+  width: 100%;  /* Asegura que el formulario ocupe todo el ancho disponible */
+  max-width: 300px;  /* Limita el ancho máximo del formulario */
+  margin: 0 auto;  /* Centra el formulario */
+  padding: 20px;
+  background-color: #f4f4f4;  /* Fondo claro */
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);  /* Sombra suave */
+}
+
+#formAgregarUsuario label {
+  font-weight: bold;  /* Resalta las etiquetas */
+  margin-bottom: 5px;
+}
+
+#formAgregarUsuario input,
+#formAgregarUsuario select,
+#formAgregarUsuario button {
+  padding: 8px;  /* Espacio dentro de los campos */
+  font-size: 14px;
+  width: 100%;  /* Los campos ocupan todo el ancho de las celdas del grid */
+  border: 1px solid #ccc;  /* Borde gris */
+  border-radius: 4px;  /* Bordes redondeados */
+}
+
+#formAgregarUsuario button {
+  background-color: #007bff; /* Fondo claro */
+  border: 1px solid #010bff; /* Borde sutil */
+  border: none;
+  cursor: pointer;
+  grid-column: span 2;  /* El botón ocupa toda la fila */
+}
+
+#formAgregarUsuario button:hover {
+  background-color: #45a049;  /* Sombra más oscura al pasar el mouse */
+}
+
+/* Estilos del contenedor de cada campo en el formulario */
+#formAgregarUsuario .form-group {
+  display: flex;
+  flex-direction: column;  /* Asegura que las etiquetas y los campos estén en columna */
+  gap: 5px;  /* Espacio entre la etiqueta y el campo */
+}
+
+/* Ajustes para mejorar la visualización en pantallas pequeñas */
+@media (max-width: 600px) {
+  #formAgregarUsuario {
+    grid-template-columns: 1fr;  /* En pantallas pequeñas, solo una columna */
+  }
+}
+
+#espacioAntesDeTabla {
+  margin-bottom: 100px; /* Ajusta el valor según el espacio que desees */
+}

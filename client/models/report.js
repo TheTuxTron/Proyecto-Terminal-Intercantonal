@@ -415,15 +415,21 @@ function obtenerValoresPorFecha(fechaInicio, fechaFin) {
     function getFechasRango(fechaInicio, fechaFin) {
         const start = new Date(fechaInicio);
         const end = new Date(fechaFin);
+    
+        // Incrementa las fechas en 1 día
+        start.setDate(start.getDate());
+        end.setDate(end.getDate());
+    
         const fechas = [];
-
+    
         while (start <= end) {
-            fechas.push(start.toISOString().split('T')[0]);  
-            start.setDate(start.getDate() + 1);
+            fechas.push(new Date(start).toISOString().split('T')[0]); // Agrega la fecha formateada
+            start.setDate(start.getDate() + 1); // Incrementa la fecha en 1 día
         }
-
+    
         return fechas;
     }
+    
 
     const fechas = getFechasRango(fechaInicio, fechaFin);
 
@@ -431,6 +437,7 @@ function obtenerValoresPorFecha(fechaInicio, fechaFin) {
         .then(response => {
             if (!response.ok) throw new Error('Error al obtener datos');
             return response.json();
+
         })
         .then(rows => {
             const rowsByFecha = rows.reduce((acc, row) => {
@@ -459,10 +466,14 @@ function obtenerValoresPorFecha(fechaInicio, fechaFin) {
             `;
 
             fechas.forEach(fecha => {
-                const row = rowsByFecha[fecha];  
+                const row = rowsByFecha[fecha];
 
-                const fechaFormateada = formatearFecha(fecha);  // Formateamos la fecha
+    // Convertir la fecha a objeto Date e incrementar un día
+    const fechaAjustada = new Date(fecha);
+    fechaAjustada.setDate(fechaAjustada.getDate() + 1);
 
+    // Formatear la fecha ajustada
+    const fechaFormateada = formatearFecha(fechaAjustada);
                 if (row) {
                     totalMananaArray.push(row.TOTAL_MANANA);
                     totalTarde += row.TOTAL_TARDE;
@@ -471,9 +482,9 @@ function obtenerValoresPorFecha(fechaInicio, fechaFin) {
                     tabla += `
                         <tr>
                             <td>${fechaFormateada}</td>
-                            <td>${row.TOTAL_MANANA}</td>
-                            <td>${row.TOTAL_TARDE}</td>
-                            <td>${row.TOTAL_DIA}</td>
+                            <td>${'$'+row.TOTAL_MANANA}</td>
+                            <td>${'$'+row.TOTAL_TARDE}</td>
+                            <td>${'$'+row.TOTAL_DIA}</td>
                         </tr>
                     `;
                 } else {
@@ -482,9 +493,9 @@ function obtenerValoresPorFecha(fechaInicio, fechaFin) {
                     tabla += `
                         <tr>
                             <td>${fechaFormateada}</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
+                            <td class="valores">$0</td>
+                            <td class="valores">$0</td>
+                            <td class="valores">$0</td>
                         </tr>
                     `;
                 }
@@ -495,9 +506,9 @@ function obtenerValoresPorFecha(fechaInicio, fechaFin) {
             tabla += `
                         <tr>
                             <td class="total">TOTAL VALORES RECAUDADOS</td>
-                            <td class="total">${totalManana}</td>
-                            <td class="total">${totalTarde}</td>
-                            <td class="total">${totalDia}</td>
+                            <td class="total">${'$'+totalManana}</td>
+                            <td class="total">${'$'+totalTarde}</td>
+                            <td class="total">${'$'+totalDia}</td>
                         </tr>
                     </tbody>
                 </table>

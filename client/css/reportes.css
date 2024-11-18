@@ -38,16 +38,21 @@ h1 {
 }
 
 table {
-    width: 100%;
+    width: 100%;  /* Asegura que la tabla ocupe el 100% del ancho del contenedor */
     border-collapse: collapse;
     background-color: #fffbfb;
     margin-bottom: 30px;
+    box-sizing: border-box; /* Incluye padding y border dentro del cálculo del ancho */
 }
 
 th, td {
     border: 1px solid #000;
-    padding: 8px;
+    padding: 8px;  /* Aumenta el padding para mejorar la legibilidad */
     text-align: center;
+}
+
+#valores td {
+    text-align: left;
 }
 
 th {
@@ -70,7 +75,6 @@ th {
 .resul {
     background-color: #8ad7fd;
 }
-
 
 .total {
     background-color: #007bff;
@@ -97,8 +101,8 @@ th {
 
 .btn-group button:hover {
     background-color: #0056b3;
+    color: #fff;
 }
-
 
 @media (max-width: 768px) {
     .controls input {

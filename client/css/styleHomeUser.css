@@ -10,7 +10,7 @@
 
 /* Estilos del contenedor principal para centrar el <main> */
 body, html {
-  padding-top: 80px; /* Ajusta según la altura del header */
+  padding-top: 120px; /* Ajusta según la altura del header */
   padding-bottom: 80px; /* Ajusta según la altura del footer */
   margin: 0;
   width: 100%;
@@ -106,4 +106,3 @@ main h1 {
   background-color: #0056b3;
   color: #fff;
 }
-
