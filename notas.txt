@@ -1,12 +1,8 @@
 Server
 npm init -y
-npm install express
-npm install sqlite3
-npm install jsonwebtoken
+npm install express sqlite3 jsonwebtoken
 Client
-npm install jwt-decode
-npm install jspdf
-npm install jspdf-autotable
-npm install jspdf jspdf-autotable
+npm install jwt-decode jspdf jspdf-autotable
 Instala de manera local
 npm install -g pm2
+
