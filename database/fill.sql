@@ -387,7 +387,6 @@ INSERT INTO "FRECUENCIAS" VALUES ('ZULA OZOGOCHE','ALAUSI-ACHUPALLAS','16H15','T
 INSERT INTO "FRECUENCIAS" VALUES ('ZULA OZOGOCHE','TOTORAS','17H30','TARDE');
 INSERT INTO "USUARIOS" VALUES ('0605888221','Joel Inca','098 305 4758','admin','superadmin','activo');
 INSERT INTO "USUARIOS" VALUES ('0604844324','Cristina Huisha','098 305 4758','admin','superadmin','activo');
-INSERT INTO "USUARIOS" VALUES ('06048443241','Cristina Huisha','098 305 4758','admin','usuario','activo');
 INSERT INTO "USUARIOS" VALUES ('1709694788','Paúl Fernando Vásquez Dávalos','','1709694788','usuario','activo');
 INSERT INTO "USUARIOS" VALUES ('0603011800','Guillermo Marcelo Endara Sánchez','','0603011800','usuario','activo');
 INSERT INTO "USUARIOS" VALUES ('0103860367','Cesar Fernando Padilla Palacios','','0103860367','admin','activo');
