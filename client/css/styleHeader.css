@@ -45,7 +45,7 @@
 
 /* Efecto hover en los enlaces */
 #miNav a:hover {
-  color: #da4040;
+  color: #000350;
 }
 
 #informe {
@@ -174,3 +174,4 @@ body {
 #espacioAntesDeTabla {
   margin-bottom: 100px; /* Ajusta el valor según el espacio que desees */
 }
+

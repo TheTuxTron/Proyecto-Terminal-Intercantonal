@@ -97,7 +97,6 @@ async function cargarUsuarios(contenidoPrincipal) {
                 <td>
                     <button class="editar">Editar</button>
                     <button class="guardar" style="display:none;">Guardar</button>
-                    <button class="eliminar">Eliminar</button>
                 </td>
             `;
             tabla.appendChild(fila);
@@ -105,7 +104,6 @@ async function cargarUsuarios(contenidoPrincipal) {
             // Agregar eventos a los botones
             const btnEditar = fila.querySelector('.editar');
             const btnGuardar = fila.querySelector('.guardar');
-            const btnEliminar = fila.querySelector('.eliminar');
 
             btnEditar.addEventListener('click', () => {
                 editarFila(fila, btnEditar, btnGuardar);
@@ -115,9 +113,7 @@ async function cargarUsuarios(contenidoPrincipal) {
                 guardarCambios(fila, usuario.CEDULA, btnEditar, btnGuardar);
             });
 
-            btnEliminar.addEventListener('click', () => {
-                eliminarUsuario(usuario.CEDULA, fila);
-            });
+
         });
         contenedorBusquedaYBoton.appendChild(tabla);
         contenedor.appendChild(titulo);
@@ -214,31 +210,7 @@ async function cargarUsuarios(contenidoPrincipal) {
             });
         }
 
-        function eliminarUsuario(cedula, fila) {
-            fetch('/api/usuarios') // Obtener todos los usuarios
-                .then(response => response.json())
-                .then(usuarios => {
-                    const administradores = usuarios.filter(usuario => usuario.ROL === 'administrador');
-                    
-                    // Verificar si hay al menos un administrador
-                    if (administradores.length <= 1 && administradores.some(usuario => usuario.CEDULA === cedula)) {
-                        alert('No se puede eliminar el único administrador');
-                        return;
-                    }
-                    
-                    if (confirm(`¿Estás seguro de eliminar el usuario con cédula: ${cedula}?`)) {
-                        fetch(`/api/usuarios/${cedula}`, { method: 'DELETE' })
-                            .then(response => {
-                                if (response.ok) {
-                                    alert('Usuario eliminado');
-                                    fila.remove(); // Eliminar la fila directamente
-                                } else {
-                                    alert('Error al eliminar el usuario');
-                                }
-                            });
-                    }
-                });
-        }
+
     } catch (error) {
         console.error('Error cargando los usuarios:', error);
     }

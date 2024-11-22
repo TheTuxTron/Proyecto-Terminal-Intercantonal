@@ -684,3 +684,81 @@ app.get('/api/secretaria', (req, res) => {
         console.log(rows);
     });
 });
+
+app.get('/api/condens', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    // Validación de las fechas proporcionadas
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    // Consulta SQL usando placeholders para las fechas
+    const query = `
+   WITH frecuencias_diarias AS (
+    SELECT
+        COOPERATIVA,
+        FECHA,
+        SUM(CASE WHEN CAST(SUBSTR(HORA, 1, 3) AS INTEGER) < 13 THEN 1 ELSE 0 END) AS frecuencias_manana,
+        SUM(CASE WHEN CAST(SUBSTR(HORA, 1, 3) AS INTEGER) >= 13 THEN 1 ELSE 0 END) AS frecuencias_tarde
+    FROM (
+        SELECT COOPERATIVA, HORA, FECHA FROM REGISTRO
+        WHERE FECHA BETWEEN ? AND ?
+        UNION ALL
+        SELECT COOPERATIVA, HORA, FECHA FROM REGISTRO_EXTRA
+        WHERE FECHA BETWEEN ? AND ?
+    ) AS todas_frecuencias
+    GROUP BY COOPERATIVA, FECHA
+),
+cumplimiento_diario AS (
+    SELECT
+        COOPERATIVA,
+        DIARIO
+    FROM CUMPLIMIENTO
+),
+frecuencia_semanal_calculada AS (
+    SELECT
+        COOPERATIVA,
+        SUM(f.frecuencias_manana + f.frecuencias_tarde) AS frecuencias_cumplidas_totales, -- Suma total de frecuencias en el rango de fechas
+        (JULIANDAY(?) - JULIANDAY(?) + 1) AS num_dias -- Número de días en el rango
+    FROM frecuencias_diarias f
+    GROUP BY COOPERATIVA
+)
+SELECT
+    f.COOPERATIVA,
+    f.FECHA,
+    f.frecuencias_manana,
+    f.frecuencias_tarde,
+    c.DIARIO AS valor_diario,
+    fs.frecuencias_cumplidas_totales, -- Suma total de frecuencias cumplidas
+    -- Calcular las frecuencias no cumplidas
+    (c.DIARIO * fs.num_dias - fs.frecuencias_cumplidas_totales) AS frecuencias_no_cumplidas,
+    -- Cálculo de la frecuencia semanal (valor diario * número de días)
+    (c.DIARIO * fs.num_dias) AS frecuencia_semanal,
+    -- Porcentaje de cumplimiento con la frecuencia semanal
+    ROUND(
+        (fs.frecuencias_cumplidas_totales * 100.0) / (c.DIARIO * fs.num_dias), 2
+    ) AS porcentaje_cumplimiento
+FROM
+    frecuencias_diarias f
+JOIN
+    cumplimiento_diario c
+    ON f.COOPERATIVA = c.COOPERATIVA
+JOIN
+    frecuencia_semanal_calculada fs
+    ON f.COOPERATIVA = fs.COOPERATIVA
+ORDER BY
+    f.COOPERATIVA, f.FECHA;
+    `;
+
+    // Ejecuta la consulta pasando los parámetros para las fechas
+    db.all(query, [startDate, endDate, startDate, endDate, endDate, startDate], (err, rows) => {
+        if (err) {
+            console.error("Error al obtener los datos:", err);
+            return res.status(500).json({ error: 'Error al obtener los datos' });
+        }
+
+        // Devuelve la respuesta con los datos obtenidos
+        res.json(rows);
+    });
+});
