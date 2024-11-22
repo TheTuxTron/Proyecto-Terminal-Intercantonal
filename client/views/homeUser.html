@@ -29,15 +29,22 @@
             <form id="registroForm">
                 <div>
                     <label for="fecha">Fecha:</label>
-                    <input type="text" id="fecha" name="fecha" required disabled>
+                    <input type="text" id="fecha" name="fecha" required>
                 </div>
                 <div>
                     <label for="tipoFrecuencia">Tipo de Frecuencia:</label>
                     <select name="tipoFrecuencia" id="tipoFrecuencia" required>
-                        <option value="" disabled selected>--------------</option>
-                        <option value="NORMAL">NORMAL</option>
+                        <option value="NORMAL" selected>NORMAL</option>
                         <option value="EXTRA">EXTRA</option>
                     </select>
+                </div>
+                <div>
+                    <label for="hora">Hora:</label>
+                    <div id="horaContainer">
+                        <select name="hora" id="hora" required>
+                            <option value="" disabled selected>--------------</option>
+                        </select>
+                    </div>
                 </div>
                 <div>
                     <label for="cooperativa">Cooperativa:</label>
@@ -50,14 +57,6 @@
                     <select name="parroquia" id="parroquia" required>
                         <option value="" disabled selected>--------------</option>
                     </select>
-                </div>
-                <div>
-                    <label for="hora">Hora:</label>
-                    <div id="horaContainer">
-                        <select name="hora" id="hora" required>
-                            <option value="" disabled selected>--------------</option>
-                        </select>
-                    </div>
                 </div>
                 <div>
                     <label for="frecuencia">Disco:</label>

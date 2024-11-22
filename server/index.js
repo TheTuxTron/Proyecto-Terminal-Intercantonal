@@ -89,13 +89,23 @@ app.get('/api/get-destinos', (req, res) => {
 });
 
 app.get('/api/get-horas', (req, res) => {
+    // Determinar si es MAÑANA o TARDE
+    const horaActual = new Date().getHours(); // Devuelve la hora en formato 24h
+    const jornada = horaActual < 13 ? 'MAÑANA' : 'TARDE';
+
+    const query = `
+        SELECT DISTINCT HORA
+        FROM FRECUENCIAS
+        WHERE JORNADA = ?
+        ORDER BY HORA
+    `;
     try {
-        db.all('SELECT HORA FROM FRECUENCIAS ', [], (err, rows) => {
+        db.all(query, [/*cooperativa, destino,*/jornada], (err, rows) => {
             if (err) {
-                console.error("Error al obtener HORAS:", err);
-                return res.status(500).json({ error: 'Error al obtener HORAS' });
+                console.error("Error al obtener horas:", err);
+                return res.status(500).json({ error: 'Error al obtener horas' });
             }
-            res.json(rows); // Devuelve los datos sin repeticiones
+            res.json(rows); // Devuelve las horas con la jornada filtrada
         });
     } catch (error) {
         console.error("Error al obtener HORAS:", error);
@@ -174,10 +184,17 @@ app.get('/api/getHoras', (req, res) => {
     const query = `
         SELECT DISTINCT HORA
         FROM FRECUENCIAS
+        WHERE JORNADA = ?
+        ORDER BY HORA
+    `;
+
+    const query2 = `
+        SELECT DISTINCT HORA
+        FROM FRECUENCIAS
         WHERE COOPERATIVA = ? AND DESTINO = ? AND JORNADA = ?
     `;
 
-    db.all(query, [cooperativa, destino, jornada], (err, rows) => {
+    db.all(query, [/*cooperativa, destino,*/jornada], (err, rows) => {
         if (err) {
             console.error("Error al obtener horas:", err);
             return res.status(500).json({ error: 'Error al obtener horas' });

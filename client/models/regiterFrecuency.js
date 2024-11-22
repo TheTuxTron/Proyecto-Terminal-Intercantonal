@@ -103,7 +103,7 @@ document.getElementById('cooperativa').addEventListener('change', async function
     }
 });
 
-document.getElementById('parroquia').addEventListener('change', async function() {
+document.getElementById('parroquia').addEventListener('DOMContentLoaded', async function() {
     const cooperativa = document.getElementById('cooperativa').value;
     const destino = this.value;
 
