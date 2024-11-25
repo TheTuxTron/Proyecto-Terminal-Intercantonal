@@ -120,6 +120,16 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
     agregarTabla('informeVespertino');
     agregarTabla('informeCondensado');
     agregarTabla('valores');
+    
+    
+    const numLineas = 3; // Número de líneas de subrayado
+    const anchoLinea = 190; // Ancho de cada línea
+    currentY = doc.lastAutoTable.finalY + 10;
+    doc.text("Observaciones:", margin, currentY);
+    for (let i = 0; i < numLineas; i++) {
+        currentY += 10; // Espaciado entre líneas
+        doc.line(margin, currentY, margin + anchoLinea, currentY); // Línea horizontal
+    }
 
     const responsable = await obtenerResponsables();
     if (currentY + 50 > pageHeight - margin) {

@@ -4,6 +4,7 @@ const fechaFinInput = document.getElementById('fechaFin');
 let fechaInicio = null;
 let fechaFin = null;
 
+
 // Función para actualizar la restricción de la fecha de fin
 function actualizarRestriccionFechaFin() {
     const fechaInicioStr = fechaInicioInput.value;
@@ -111,7 +112,11 @@ fechaFinInput.addEventListener('change', (event) => {
     
 
     // Agregar evento de clic al botón para cargar los registros
-    document.getElementById('generarInformeBtn').addEventListener('click', cargarRegistros);
+    document.getElementById('generarInformeBtn').addEventListener('click', () => {
+        cargarRegistros(); // Llama a la función para cargar registros
+        document.getElementById("observaciones").style.display = "block"; // Cambia el estilo a block
+    });
+    
 
 
     function generarFechas(fechaInicioInput, fechaFinInput) {

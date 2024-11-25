@@ -441,18 +441,22 @@ app.get('/api/usuarios', (req, res) => {
 
 app.put('/api/usuarios/:cedula', (req, res) => {
     const cedula = req.params.cedula;
-    const { nombre, celular, rol } = req.body;
+    const { nombre, celular, rol, estado } = req.body;
 
-    const sql = `UPDATE USUARIOS SET NOMBRE = ?, NUMERO_CELULAR = ?, ROL = ? WHERE CEDULA = ?`;
-    db.run(sql, [nombre, celular, rol, cedula], function (err) {
+    // Consulta corregida sin la coma extra
+    const sql = `UPDATE USUARIOS SET NOMBRE = ?, NUMERO_CELULAR = ?, ROL = ?, ESTADO = ? WHERE CEDULA = ?`;
+
+    db.run(sql, [nombre, celular, rol, estado, cedula], function (err) {
         if (err) {
             console.error('Error en la base de datos:', err.message);
             return res.status(500).json({ error: 'Error al actualizar el usuario', detalles: err.message });
         }
-        res.json({ message: 'Usuario actualizado correctamente' });
+
+        // Confirmar éxito en la actualización
+        res.json({ message: 'Usuario actualizado correctamente', cambios: this.changes });
     });
-    
 });
+
 
 app.post('/api/registrarusuario', (req, res) => {
     const { cedula, nombre, celular, rol } = req.body;
@@ -471,9 +475,9 @@ app.post('/api/registrarusuario', (req, res) => {
             return res.status(400).json({ success: false, error: "El usuario ya está registrado." });
         } else {
             // Insertar el nuevo usuario
-            const query = `INSERT INTO USUARIOS (CEDULA, NOMBRE, NUMERO_CELULAR, ROL, CONTRASEÑA) 
-                           VALUES (?, ?, ?, ?, ?)`;
-            db.run(query, [cedula, nombre, celular, rol, "1234"], function (err) {
+            const query = `INSERT INTO USUARIOS (CEDULA, NOMBRE, NUMERO_CELULAR, ROL, CONTRASEÑA, ESTADO) 
+                           VALUES (?, ?, ?, ?, ?, ?)`;
+            db.run(query, [cedula, nombre, celular, rol, "1234", "activo"], function (err) {
                 if (err) {
                     console.error("Error al registrar el usuario:", err);
                     return res.status(500).json({ error: 'Error al registrar el usuario' });
@@ -484,24 +488,6 @@ app.post('/api/registrarusuario', (req, res) => {
     });
 });
 
-
-app.delete('/api/usuarios/:cedula', (req, res) => {
-    const cedula = req.params.cedula;
-
-    // SQL para eliminar un usuario basado en la cédula
-    const sql = `DELETE FROM USUARIOS WHERE CEDULA = ?`;
-
-    db.run(sql, [cedula], function (err) {
-        if (err) {
-            console.error('Error en la base de datos:', err.message);
-            return res.status(500).json({ error: 'Error al eliminar el usuario', detalles: err.message });
-        }
-        if (this.changes === 0) {
-            return res.status(404).json({ message: 'Usuario no encontrado' });
-        }
-        res.json({ message: 'Usuario eliminado correctamente' });
-    });
-});
 
 // Definir la ruta para obtener las frecuencias
 app.get('/api/frecuenciasg', (req, res) => {
