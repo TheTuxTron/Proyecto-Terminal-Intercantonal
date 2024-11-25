@@ -1,18 +1,7 @@
-function cargarSeccion(seccion) {
+document.addEventListener('DOMContentLoaded', () => {
     const contenidoPrincipal = document.getElementById('contenidoPrincipal');
-    contenidoPrincipal.innerHTML = '';  // Limpiar contenido anterior
-
-    switch (seccion) {
-        case 'usuarios':
-            cargarUsuarios(contenidoPrincipal);
-            break;
-        case 'frecuencias':
-            cargarFrecuencias(contenidoPrincipal);
-            break;
-        default:
-            contenidoPrincipal.innerHTML = '<p>Sección no encontrada.</p>';
-    }
-}
+    cargarUsuarios(contenidoPrincipal);
+});
 
 async function cargarUsuarios(contenidoPrincipal) {
     const contenedor = document.createElement('div');
@@ -31,9 +20,6 @@ async function cargarUsuarios(contenidoPrincipal) {
         busqueda.id = 'buscarUsuario';
         busqueda.addEventListener('input', filtrarUsuarios);
 
-        // Crear título
-        const titulo = document.createElement('h2');
-        titulo.innerText = 'Gestión de Usuarios';
 
         // Crear contenedor para la barra de búsqueda y el botón
         const contenedorBusquedaYBoton = document.createElement('div');
@@ -70,7 +56,7 @@ async function cargarUsuarios(contenidoPrincipal) {
         const tabla = document.createElement('table');
         tabla.id = 'tablaUsuarios';
         const encabezado = document.createElement('tr');
-        encabezado.innerHTML = '<th>Cédula</th><th>Nombre</th><th>Celular</th><th>Rol</th><th>Estado</th><th>Operaciones</th>';
+        encabezado.innerHTML = '<th>Cédula</th><th>Nombre</th><th>Celular</th><th>Rol</th><th>Estado</th><th>Acción</th>';
         tabla.appendChild(encabezado);
 
         // Crear un espacio antes de la tabla
@@ -108,7 +94,6 @@ async function cargarUsuarios(contenidoPrincipal) {
 
         });
         contenedorBusquedaYBoton.appendChild(tabla);
-        contenedor.appendChild(titulo);
         contenedor.appendChild(busqueda);
         //contenedor.appendChild(btnNuevoUsuario);  // Agregar el botón "Nuevo Usuario"
         contenedor.appendChild(formAgregarUsuario);  // Agregar el formulario al contenedor
@@ -215,7 +200,7 @@ async function cargarUsuarios(contenidoPrincipal) {
         console.error('Error cargando los usuarios:', error);
     }
 }
-
+/* 
 async function cargarFrecuencias(contenidoPrincipal) {
     const contenedor = document.createElement('div');
 
@@ -351,3 +336,4 @@ async function cargarFrecuencias(contenidoPrincipal) {
         console.error('Error cargando las frecuencias:', error);
     }
 }
+ */
