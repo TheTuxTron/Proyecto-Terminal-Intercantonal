@@ -745,3 +745,98 @@ ORDER BY
         res.json(rows);
     });
 });
+
+app.get('/api/ticketsN', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = `
+        SELECT CONCAT(
+            (SELECT NUM_TICKET
+             FROM REGISTRO
+             WHERE FECHA BETWEEN ? AND ?
+             ORDER BY NUM_TICKET ASC
+             LIMIT 1),
+            ' a ',
+            (SELECT NUM_TICKET
+             FROM REGISTRO
+             WHERE FECHA BETWEEN ? AND ?
+             ORDER BY NUM_TICKET DESC
+             LIMIT 1)
+        ) AS RANGO_TICKET;
+    `;
+
+    db.get(query, [startDate, endDate, startDate, endDate], (err, row) => { // Cambiado de db.all a db.get
+        if (err) {
+            console.error("Error al obtener los valores:", err);
+            return res.status(500).json({ error: 'Error al obtener los valores' });
+        }
+
+        res.json(row || { RANGO_TICKET: 'No hay datos en el rango proporcionado' });
+    });
+});
+
+app.get('/api/ticketsE', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = `
+        SELECT CONCAT(
+            (SELECT NUM_TICKET
+             FROM REGISTRO_EXTRA
+             WHERE FECHA BETWEEN ? AND ?
+             ORDER BY NUM_TICKET ASC
+             LIMIT 1),
+            ' a ',
+            (SELECT NUM_TICKET
+             FROM REGISTRO_EXTRA
+             WHERE FECHA BETWEEN ? AND ?
+             ORDER BY NUM_TICKET DESC
+             LIMIT 1)
+        ) AS RANGO_TICKET;
+    `;
+
+    db.get(query, [startDate, endDate, startDate, endDate], (err, row) => { // Cambiado de db.all a db.get
+        if (err) {
+            console.error("Error al obtener los valores:", err);
+            return res.status(500).json({ error: 'Error al obtener los valores' });
+        }
+
+        res.json(row || { RANGO_TICKET: 'No hay datos en el rango proporcionado' });
+    });
+});
+
+
+app.get('/api/total', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = `
+        SELECT 
+        SUM(VALOR) AS TOTAL_DIA -- Total de todos los valores recaudados en el rango de fechas
+        FROM (
+            SELECT FECHA, HORA, VALOR FROM REGISTRO_EXTRA
+            WHERE FECHA BETWEEN ? AND ? -- reemplaza con las fechas deseadas
+            UNION ALL
+            SELECT FECHA, HORA, VALOR FROM REGISTRO
+            WHERE FECHA BETWEEN ? AND ? -- reemplaza con las fechas deseadas
+        ) AS combined_records;
+    `;
+
+    db.get(query, [startDate, endDate, startDate, endDate], (err, row) => { // Cambiado de db.all a db.get
+        if (err) {
+            console.error("Error al obtener los valores:", err);
+            return res.status(500).json({ error: 'Error al obtener los valores' });
+        }
+        res.json(row);
+    }); // Cierre de db.get
+}); // Cierre de app.get

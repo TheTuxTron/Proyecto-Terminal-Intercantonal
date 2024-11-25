@@ -10,6 +10,8 @@
     <script src="../models/getInfo.js"></script>
     <link rel="stylesheet" href="../public/css/styleHomeAdmin.css">
     <link rel="stylesheet" href="../public/css/reportes.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.5/purify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
@@ -26,85 +28,93 @@
             <input type="date" id="fechaInicio" required>
             <input type="date" id="fechaFin" required>
         </div>
+    
 
-        <div id="informeMatutino"></div>
-        <div id="informeVespertino"></div>
-        <div id="informeCondensado" class="informe-condensado"></div>
-        <div id="valores"></div>
-
-        <!-- Botones para seleccionar la tabla -->
-        <div class="btn-group">
-            <button onclick="mostrarTabla('informeMatutino')">Informe Matutino y Vespertino</button>
-            <button onclick="mostrarTabla('informeCondensado')">Informe Condensado y Valores</button>
-        </div>
-
-        <!-- Botón para generar el PDF -->
-        <div class="btn-group">
-            <button id="generarPdfBtn" class="btn-generate" onclick="generarPdf()">Generar PDF</button>
-        </div>
+    <!-- Botones para generar los informes -->
+    <div class="btn-group">
+        <button id="generarInformeBtn" onclick="cargarInforme()">Informe Turno Mañana-Tarde</button>
+        <button id="generarTablas" onclick="cargarTablas()">Informe Condensado, Valores y Depósito</button>
+        <button id="generarCompleto" onclick="cargarCompleto()">Generar Informe Completo</button>
     </div>
-  
-    <script src="../models/semanal.js"></script>
-    <script src="../models/semanalpdf.js"></script>
+    <div id="depósito" class="tabla-contenedor" style="display:none;">
+        <form id="formDeposito">
+            <div class="form-group">
+                <label for="fechaDeposito">Fecha de Depósito:</label>
+                <input type="date" id="fechaDeposito" name="fechaDeposito" required>
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="numeroDeposito">Número de Depósito:</label>
+                <input type="text" id="numeroDeposito" name="numeroDeposito" required>
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="total">Valor de depósito:</label>
+                <input type="input" id="total" name="total" disabled></input>
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="numeroGuia">Número de Guía:</label>
+                <input type="text" id="numeroGuia" name="numeroGuia" required>
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="ticketsN">Tickets Normales vendidos:</label>
+                <input type="input" id="ticketsN" name="ticketsN" disabled></textarea>
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="ticketsE">Tickets Extra vendidos:</label>
+                <input type="input" id="ticketsE" name="ticketsE" disabled></input>
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="observaciones">Observaciones:</label>
+                <textarea id="observaciones" name="observaciones" rows="4" cols="50" required></textarea>
+            </div>
+        </form>
 
-    <script>
-        // Función para mostrar la tabla seleccionada
-        function mostrarTabla(tablaId) {
-            // Ocultar todas las tablas
-            document.getElementById('informeMatutino').style.display = 'none';
-            document.getElementById('informeVespertino').style.display = 'none';
-            document.getElementById('informeCondensado').style.display = 'none';
-            document.getElementById('informeAdicional').style.display = 'none';
+    </div>    
+    <!-- Divs para mostrar los informes -->
+    <div id="informeMatutino" class="tabla-contenedor" style="display:none;">
+        <!-- Contenido del informe matutino -->
+        <table id="informeMatutino">
+            <!-- Contenido de la tabla matutina -->
+        </table>
+    </div>
 
-            // Mostrar la tabla correspondiente
-            if(tablaId === 'informeMatutino') {
-                document.getElementById('informeMatutino').style.display = 'block';
-                document.getElementById('informeVespertino').style.display = 'block';
-            } else if(tablaId === 'informeCondensado') {
-                document.getElementById('informeCondensado').style.display = 'block';
-                document.getElementById('informeAdicional').style.display = 'block';
-            }
-        }
+    <div id="informeVespertino" class="tabla-contenedor" style="display:none;">
+        <!-- Contenido del informe vespertino -->
+        <table id="informeVespertino">
+            <!-- Contenido de la tabla vespertina -->
+        </table>
+    </div>
+    
+    <div id="informeCondensadoD" class="tabla-contenedor" style="display:none;">
+        <!-- Contenido del informe condensado -->
+        <table id="informeCondensadoD">
+            <!-- Contenido de la tabla condensado -->
+        </table>
+    </div>
 
-        // Función para generar el PDF de la tabla visible
-        function generarPdf() {
-            // Determinar cuál es la tabla visible
-            let tablaVisible;
-            if (document.getElementById('informeMatutino').style.display === 'block') {
-                tablaVisible = document.getElementById('tablaMatutino');
-            } else if (document.getElementById('informeVespertino').style.display === 'block') {
-                tablaVisible = document.getElementById('tablaVespertino');
-            } else if (document.getElementById('informeCondensado').style.display === 'block') {
-                tablaVisible = document.getElementById('tablaCondensado');
-            } else {
-                tablaVisible = document.getElementById('tablaAdicional');
-            }
+    <div id="valores" class="tabla-contenedor" style="display:none;">
+        <!-- Contenido de los valores -->
+        <table id="valores">
+            <!-- Contenido de la tabla de valores -->
+        </table>
+    </div> <!-- Corrección: Se cerró este div correctamente -->
 
-            // Generar PDF con la tabla visible
-            html2pdf()
-                .from(tablaVisible)
-                .save('reporte_diario.pdf');
-        }
-
-        // Llamada a mostrar la tabla de la mañana por defecto
-        mostrarTabla('informeMatutino');
-        
-        // Función para obtener la fecha actual en formato aaaa-mm-dd
-        function obtenerFechaActual() {
-            const fecha = new Date();
-            const año = fecha.getFullYear();
-            const mes = String(fecha.getMonth() + 1).padStart(2, '0'); // Meses comienzan en 0
-            const dia = String(fecha.getDate()).padStart(2, '0');
-            
-            return `${año}-${mes}-${dia}`;
-        }
-
-        // Establecer la fecha actual como valor por defecto en los campos de fecha
-        document.getElementById('fechaInicio').value = obtenerFechaActual();
-        document.getElementById('fechaFin').value = obtenerFechaActual();
-    </script>
+    <div class="btn-group">
+        <button id="generarPdfBtn" class="btn-generate">Generar PDF</button>
+    </div>
+</div>
+    <!-- Footer -->
+    <footer>
+        <div id="footer"></div>
+    </footer>
 </body>
-<footer>
-    <div id="footer"></div>
-</footer>
+<!-- Scripts -->
+<script src="../models/semanal.js"></script>
+<script src="../models/diario.js"></script>
+<script src="../models/diariopdf.js"></script>
 </html>
