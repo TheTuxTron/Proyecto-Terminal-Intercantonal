@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/images/logo.ico" type="image/x-icon">
+    <title>Reporte Mensual</title>
+    <link rel="stylesheet" href="../css/reportes.css">
+    <script defer src="../models/render.js"></script>
+    <script src="../models/getInfo.js"></script>
+    <link rel="stylesheet" href="../public/css/styleHomeAdmin.css">
+    <link rel="stylesheet" href="../public/css/reportes.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.5/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+</head>
+<body id="body">
+    <div id="header"></div>
+    <div class="container">
+        <h1>Reporte Mensual</h1>
+        
+        <div class="controls">
+            <label for="mesReporte">Seleccione el mes del reporte:</label>
+            <input type="month" id="mesReporte" required>
+        </div>
+        
+        <div class="btn-group">
+            <button id="disco" onclick="cargarDisco()">Informe Ingreso de Frecuencias</button>
+            <button id="pasajeros" onclick="cargarPasajeros()">Informe Pasajeros por Cooperativa</button>
+            <button id="valores" onclick="cargarValores()">Informe Valores Recaudados</button>        
+            <button id="cumplimiento" onclick="cargarCumplimiento()">Informe Porcentaje de Cumplimiento</button>
+        </div>
+        <div class="disco"></div>
+        <div class="pasajeros"></div>
+        <div class="valores"></div>
+        <div class="cumplimiento"></div>
+
+    <div class="btn-group">
+        <button id="generarPdfBtn" class="btn-generate">Generar PDF</button>
+    </div>
+</div>
+    <script src="../models/mensual.js"></script>
+    <script src="../models/mensualpdf.js"></script>
+</body>
+<footer>
+    <div id="footer"></div>
+</footer>
+</html>

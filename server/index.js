@@ -843,3 +843,155 @@ app.get('/api/total', (req, res) => {
         res.json(row);
     }); // Cierre de db.get
 }); // Cierre de app.get
+
+app.get('/api/mensual-disco', (req, res) => {
+    const { mes } = req.query;
+
+    if (!mes) {
+        return res.status(400).json({ error: 'Debe proporcionar el mes en formato YYYY-MM' });
+    }
+
+    const query = `
+       WITH REGISTROS_COMBINADOS AS (
+    SELECT 
+        FECHA,
+        CASE 
+            WHEN CAST(SUBSTR(HORA, 1, 2) AS INTEGER) < 13 
+                 OR (CAST(SUBSTR(HORA, 1, 2) AS INTEGER) = 13 AND CAST(SUBSTR(HORA, 4, 2) AS INTEGER) = 0) THEN 'MAÑANA'
+            ELSE 'TARDE'
+        END AS TURNO,
+        TIPO_FREC,
+        COUNT(*) AS FRECUENCIAS
+    FROM REGISTRO
+    WHERE TIPO_FREC IN ('NORMAL', 'EXTRA') 
+      AND strftime('%Y-%m', FECHA) = ?
+    GROUP BY FECHA, TURNO, TIPO_FREC
+
+    UNION ALL
+
+    SELECT 
+        FECHA,
+        CASE 
+            WHEN CAST(SUBSTR(HORA, 1, 2) AS INTEGER) < 13 
+                 OR (CAST(SUBSTR(HORA, 1, 2) AS INTEGER) = 13 AND CAST(SUBSTR(HORA, 4, 2) AS INTEGER) = 0) THEN 'MAÑANA'
+            ELSE 'TARDE'
+        END AS TURNO,
+        TIPO_FREC,
+        COUNT(*) AS FRECUENCIAS
+    FROM REGISTRO_EXTRA
+    WHERE TIPO_FREC IN ('NORMAL', 'EXTRA') 
+      AND strftime('%Y-%m', FECHA) = ?
+    GROUP BY FECHA, TURNO, TIPO_FREC
+)
+SELECT 
+    FECHA,
+    COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA NORMAL",
+    COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA EXTRA",
+    COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO TARDE NORMAL",
+    COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO TARDE EXTRA",
+    COALESCE(SUM(FRECUENCIAS), 0) AS "TOTAL DIARIO FRECUENCIAS"
+FROM REGISTROS_COMBINADOS
+WHERE TURNO IN ('MAÑANA', 'TARDE')
+GROUP BY FECHA
+
+UNION ALL
+
+SELECT
+    'TOTAL' AS FECHA,
+    COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA NORMAL",
+    COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA EXTRA",
+    COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO TARDE NORMAL",
+    COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO TARDE EXTRA",
+    COALESCE(SUM(FRECUENCIAS), 0) AS "TOTAL DIARIO FRECUENCIAS"
+FROM REGISTROS_COMBINADOS
+
+ORDER BY FECHA;
+
+    `;
+
+    db.all(query, [mes, mes], (err, rows) => {
+        if (err) {
+            console.error('Error al generar el reporte mensual:', err);
+            return res.status(500).json({ error: 'Error al generar el reporte mensual' });
+        }
+
+        res.json(rows); // Devuelve los datos agrupados por día
+    });
+});
+// Endpoint para obtener cumplimiento
+app.get('/api/cumplimiento', (req, res) => {
+    const { mesReporte } = req.query;
+
+    if (!mesReporte) {
+        return res.status(400).json({ error: 'Debe proporcionar el mes en formato YYYY-MM' });
+    }
+
+    const query = `
+        WITH frecuencias_totales AS (
+            SELECT
+                COOPERATIVA,
+                COUNT(*) AS total_frecuencias
+            FROM (
+                SELECT COOPERATIVA, HORA, FECHA, TIPO_FREC
+                FROM REGISTRO
+                WHERE strftime('%Y-%m', FECHA) = ?
+                UNION ALL
+                SELECT COOPERATIVA, HORA, FECHA, TIPO_FREC
+                FROM REGISTRO_EXTRA
+                WHERE strftime('%Y-%m', FECHA) = ?
+            ) AS todas_frecuencias
+            GROUP BY COOPERATIVA
+        ),
+        frecuencia_diaria AS (
+            SELECT
+                COOPERATIVA,
+                DIARIO
+            FROM CUMPLIMIENTO
+        ),
+        frecuencia_mensual AS (
+            SELECT
+                COOPERATIVA,
+                DIARIO,
+                (DIARIO * strftime('%d', ? || '-01', '+1 month', '-1 day')) AS frecuencia_mensual
+            FROM CUMPLIMIENTO
+        ),
+        reporte_cumplimiento AS (
+            SELECT
+                ft.COOPERATIVA,
+                fm.DIARIO AS frecuencia_diaria,
+                fm.frecuencia_mensual,
+                ft.total_frecuencias,
+                (fm.frecuencia_mensual - ft.total_frecuencias) AS frecuencias_no_cumplen,
+                ROUND(ft.total_frecuencias * 100.0 / fm.frecuencia_mensual, 2) AS porcentaje_cumplimiento
+            FROM frecuencias_totales ft
+            JOIN frecuencia_mensual fm ON ft.COOPERATIVA = fm.COOPERATIVA
+        )
+        SELECT 
+            COOPERATIVA,
+            frecuencia_diaria,
+            frecuencia_mensual,
+            total_frecuencias,
+            frecuencias_no_cumplen,
+            porcentaje_cumplimiento
+        FROM reporte_cumplimiento
+        UNION ALL
+        SELECT
+            'TOTAL' AS COOPERATIVA,
+            SUM(frecuencia_diaria) AS frecuencia_diaria,
+            SUM(frecuencia_mensual) AS frecuencia_mensual,
+            SUM(total_frecuencias) AS total_frecuencias,
+            SUM(frecuencias_no_cumplen) AS frecuencias_no_cumplen,
+            ROUND(AVG(porcentaje_cumplimiento), 2) AS porcentaje_cumplimiento
+        FROM reporte_cumplimiento
+        ORDER BY COOPERATIVA;
+    `;
+
+    db.all(query, [mesReporte, mesReporte, mesReporte], (err, rows) => {
+        if (err) {
+            console.error("Error al obtener frecuencias:", err);
+            return res.status(500).json({ error: 'Error al obtener frecuencias' });
+        }
+
+        res.json(rows); // Devuelve los datos obtenidos
+    });
+});
