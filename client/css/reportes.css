@@ -145,6 +145,11 @@ th {
     width: 100%;
 }
 
+.disco, .pasajeros, .valores, .cumplimiento {
+    display: none;
+}
+
+
 @media (max-width: 768px) {
     .controls input {
         width: 90%;
