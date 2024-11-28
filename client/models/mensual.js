@@ -13,7 +13,7 @@ function toggleTable(className) {
 
 
 async function cargarDisco() {
-    const mes = document.getElementById("mesReporte").value;
+    const mes = document.getElementById("mesReporte").value; // Formato: YYYY-MM
     if (!mes) {
         alert("Por favor, seleccione un mes para generar el reporte.");
         return;
@@ -28,14 +28,23 @@ async function cargarDisco() {
         
         const data = await response.json();
 
-        // Renderizar la tabla
-        renderizarDisco(data);
+        // Pasar el valor del mes al renderizador
+        renderizarDisco(data, mes);
     } catch (error) {
         console.error("Error:", error);
         alert("No se pudo cargar el informe. Por favor, intente nuevamente.");
     }
 }
-function renderizarDisco(data) {
+
+function renderizarDisco(data, mes) {
+    // Obtener el nombre del mes desde el valor YYYY-MM
+    const meses = [
+        "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+        "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
+    ];
+    const [anio, mesNumero] = mes.split("-"); // Dividir en "YYYY" y "MM"
+    const mesNombre = meses[parseInt(mesNumero, 10) - 1] || "Mes desconocido";
+
     // Contenedor donde se insertará la tabla
     const container = document.querySelector(".disco");
     const existingTable = document.querySelector("table");
@@ -52,7 +61,7 @@ function renderizarDisco(data) {
     const titleRow = document.createElement("tr");
     const titleCell = document.createElement("th");
     titleCell.setAttribute("colspan", "6");
-    titleCell.textContent = "TERMINAL INTERCANTONAL DE RIOBAMBA - INFORME MENSUAL DE INGRESO DE FRECUENCIAS";
+    titleCell.textContent = `TERMINAL INTERCANTONAL DE RIOBAMBA - INFORME DE REGISTRO DE FRECUENCIAS DE ${mesNombre} ${anio}`;
     titleCell.classList.add("table-title");
     titleRow.appendChild(titleCell);
     thead.appendChild(titleRow);
@@ -80,7 +89,7 @@ function renderizarDisco(data) {
         if (row.FECHA === 'TOTAL') {
             tr.style.backgroundColor = '#007bff'; // Cambiar color de fondo a azul
             tr.style.color = 'white'; // Asegurarse de que el texto sea visible
-            tr.style.fontWeight ='bold';
+            tr.style.fontWeight = 'bold';
         }
 
         tr.innerHTML = `
@@ -115,13 +124,21 @@ async function cargarCumplimiento() {
         }   
         const data = await response.json();
 
-        renderizarCumplimiento(data);
+        renderizarCumplimiento(data, mes);
     } catch (error) {
         console.error("Error:", error);
         alert("No se pudo cargar el informe. Por favor, intente nuevamente.");
     }
 }
-function renderizarCumplimiento(data) {
+function renderizarCumplimiento(data, mes) {
+    
+    const meses = [
+        "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+        "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
+    ];
+    const [anio, mesNumero] = mes.split("-"); // Dividir en "YYYY" y "MM"
+    const mesNombre = meses[parseInt(mesNumero, 10) - 1] || "Mes desconocido";
+
     // Contenedor donde se insertará la tabla
     const container = document.querySelector(".cumplimiento");
     const existingTable = container.querySelector("table");
@@ -139,7 +156,7 @@ function renderizarCumplimiento(data) {
     const titleRow = document.createElement("tr");
     const titleCell = document.createElement("th");
     titleCell.setAttribute("colspan", "6");
-    titleCell.textContent = "TERMINAL INTERCANTONAL DE RIOBAMBA - INFORME MENSUAL DE CUMPLIMIENTO DE FRECUENCIAS";
+    titleCell.textContent = `TERMINAL INTERCANTONAL DE RIOBAMBA - INFORME DE CUMPLIMIENTO DE FRECUENCIAS DE ${mesNombre} ${anio}`;
     titleCell.classList.add("table-title");
     titleRow.appendChild(titleCell);
     thead.appendChild(titleRow);
@@ -203,14 +220,21 @@ async function cargarValores() {
         const data = await response.json();
 
         // Renderizar la tabla
-        renderizarValores(data);
+        renderizarValores(data,mes);
     } catch (error) {
         console.error("Error:", error);
         alert("No se pudo cargar el informe. Por favor, intente nuevamente.");
     }
 }
-function renderizarValores(data) {
+function renderizarValores(data, mes) {
     // Contenedor donde se insertará la tabla
+    const meses = [
+        "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+        "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
+    ];
+    const [anio, mesNumero] = mes.split("-"); // Dividir en "YYYY" y "MM"
+    const mesNombre = meses[parseInt(mesNumero, 10) - 1] || "Mes desconocido";
+
     const container = document.querySelector(".valores");
     const existingTable = container.querySelector("table");
     if (existingTable) existingTable.remove();
@@ -226,7 +250,7 @@ function renderizarValores(data) {
     const titleRow = document.createElement("tr");
     const titleCell = document.createElement("th");
     titleCell.setAttribute("colspan", "6");
-    titleCell.textContent = "TERMINAL INTERCANTONAL DE RIOBAMBA - INFORME MENSUAL DE VALORES RECAUDADOS";
+    titleCell.textContent = `TERMINAL INTERCANTONAL DE RIOBAMBA - INFORME DE VALORES RECAUDADOS DE ${mesNombre} ${anio}`;
     titleCell.classList.add("table-title");
     titleRow.appendChild(titleCell);
     thead.appendChild(titleRow);
@@ -298,6 +322,7 @@ async function cargarPasajeros() {
         alert("Por favor, seleccione un mes para generar el reporte.");
         return;
     }
+    
 
     // Contenedor donde se mostrará el select
     const containerPasajeros = document.querySelector(".pasajeros");
@@ -378,7 +403,7 @@ async function cargarPasajeros() {
 
             const data = await response.json();
 
-            renderizarPasajeros(data);
+            renderizarPasajeros(data, mes);
         } catch (error) {
             console.error("Error al cargar pasajeros:", error);
             alert("No se pudo cargar el informe. Por favor, intente nuevamente.");
@@ -386,9 +411,16 @@ async function cargarPasajeros() {
     });
 }
 
-// Función para renderizar la tabla con los datos de pasajeros
-function renderizarPasajeros(data) {
+function renderizarPasajeros(data, mes) {
     const container = document.querySelector(".pasajeros");
+    const meses = [
+        "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
+        "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
+    ];
+
+    // Validar el formato de `mes` y extraer año y mes
+    const [anio, mesNumero] = mes.split("-"); // Dividir en "YYYY" y "MM"
+    const mesNombre = meses[parseInt(mesNumero, 10) - 1] || "Mes desconocido";
 
     // Limpiar tabla anterior si existe
     const existingTable = container.querySelector("table");
@@ -396,68 +428,82 @@ function renderizarPasajeros(data) {
         existingTable.remove();
     }
 
-       // Eliminar el mensaje previo si lo hay
-       const existingMessage = container.querySelector("p");
-       if (existingMessage) {
-           existingMessage.remove();
-       }
-   
-       // Verificar si hay datos
-       if (!data || data.length === 0) {
-           // Crear el mensaje si no hay datos
-           const message = document.createElement("p");
-           message.textContent = "No hay datos disponibles para la cooperativa seleccionada.";
-           message.style.textAlign = "center";  // Centrar el mensaje
-           container.appendChild(message);
-           return;
-       }
-   
-// Crear y agregar la tabla con los datos de pasajeros
-const table = document.createElement("table");
-table.classList.add("report-table");
+    // Eliminar el mensaje previo si lo hay
+    const existingMessage = container.querySelector("p");
+    if (existingMessage) {
+        existingMessage.remove();
+    }
 
-// Encabezados de la tabla
-const thead = document.createElement("thead");
-const headerRow = document.createElement("tr");
-headerRow.innerHTML = `
-    <th>Cooperativa</th>
-    <th>Destino</th>
-    <th>Total Pasajeros</th>
-`;
-thead.appendChild(headerRow);
-table.appendChild(thead);
+    // Verificar si hay datos
+    if (!data || data.length === 0) {
+        // Crear el mensaje si no hay datos
+        const message = document.createElement("p");
+        message.textContent = "No hay datos disponibles para la cooperativa seleccionada.";
+        message.style.textAlign = "center"; // Centrar el mensaje
+        container.appendChild(message);
+        return;
+    }
 
-// Cuerpo de la tabla
-const tbody = document.createElement("tbody");
-let totalPasajeros = 0;  // Variable para acumular el total de pasajeros
+    // Crear y agregar la tabla con los datos de pasajeros
+    const table = document.createElement("table");
+    table.classList.add("report-table");
 
-data.forEach(({ COOPERATIVA, DESTINO, TOTAL_PASAJEROS }) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-        <td>${COOPERATIVA}</td>
-        <td>${DESTINO}</td>
-        <td>${TOTAL_PASAJEROS}</td>
+    // Crear el encabezado de la tabla
+    const thead = document.createElement("thead");
+
+    // Fila del título
+    const titleRow = document.createElement("tr");
+    const titleCell = document.createElement("th");
+    titleCell.setAttribute("colspan", "3"); // Ajustar al número de columnas reales
+    titleCell.textContent = `TERMINAL INTERCANTONAL DE RIOBAMBA - INFORME DE PASAJEROS REGISTRADOS DE ${mesNombre} ${anio}`;
+    titleCell.classList.add("table-title");
+    titleRow.appendChild(titleCell);
+    thead.appendChild(titleRow);
+
+    // Fila de encabezados
+    const headerRow = document.createElement("tr");
+    headerRow.innerHTML = `
+        <th>Cooperativa</th>
+        <th>Destino</th>
+        <th>Total Pasajeros</th>
     `;
-    tbody.appendChild(row);
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
 
-    // Sumar los pasajeros
-    totalPasajeros += TOTAL_PASAJEROS;
-});
+    // Cuerpo de la tabla
+    const tbody = document.createElement("tbody");
+    let totalPasajeros = 0; // Variable para acumular el total de pasajeros
 
-table.appendChild(tbody);
+    if (Array.isArray(data)) {
+        data.forEach(({ COOPERATIVA, DESTINO, TOTAL_PASAJEROS }) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${COOPERATIVA || "Sin información"}</td>
+                <td>${DESTINO || "Sin información"}</td>
+                <td>${TOTAL_PASAJEROS || 0}</td>
+            `;
+            tbody.appendChild(row);
+            totalPasajeros += Number(TOTAL_PASAJEROS) || 0;
+        });
+    }
 
-// Agregar la fila con la sumatoria total de pasajeros
-const footerRow = document.createElement("tr");
-footerRow.innerHTML = `
-    <td colspan="2"><strong>Total Pasajeros</strong></td>
-    <td><strong>${totalPasajeros}</strong></td>
-`;
+    // Agregar la fila con la sumatoria total de pasajeros
+    const footerRow = document.createElement("tr");
+    footerRow.innerHTML = `
+        <td colspan="2"><strong>Total Pasajeros</strong></td>
+        <td><strong>${totalPasajeros}</strong></td>
+    `;
+    footerRow.classList.add("footer-row");
+    footerRow.style.backgroundColor = '#007bff';
+    footerRow.style.color = 'white';
+    footerRow.style.fontWeight = 'bold';
+    tbody.appendChild(footerRow);
 
-footerRow.style.backgroundColor = '#007bff';  // Fondo azul
-footerRow.style.color = 'white';  // Texto blanco
-footerRow.style.fontWeight = 'bold';  // Hacer el texto más grueso
-tbody.appendChild(footerRow);
+    table.appendChild(tbody);
 
-// Agregar la tabla al contenedor
-container.appendChild(table);
+    if (container) {
+        container.appendChild(table);
+    } else {
+        console.error("El contenedor `container` no está definido.");
+    }
 }
