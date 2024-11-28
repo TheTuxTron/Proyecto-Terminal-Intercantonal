@@ -80,6 +80,7 @@ function renderizarDisco(data) {
         if (row.FECHA === 'TOTAL') {
             tr.style.backgroundColor = '#007bff'; // Cambiar color de fondo a azul
             tr.style.color = 'white'; // Asegurarse de que el texto sea visible
+            tr.style.fontWeight ='bold';
         }
 
         tr.innerHTML = `
@@ -166,6 +167,7 @@ function renderizarCumplimiento(data) {
         if (row.COOPERATIVA === 'TOTAL') {
             tr.style.backgroundColor = '#007bff'; // Cambiar color de fondo a azul
             tr.style.color = 'white'; // Asegurarse de que el texto sea visible
+            tr.style.fontWeight ='bold';
         }
 
         tr.innerHTML = `
@@ -252,6 +254,7 @@ function renderizarValores(data) {
         if (row.FECHA === 'TOTAL') {
             tr.style.backgroundColor = '#007bff'; // Cambiar color de fondo a azul
             tr.style.color = 'white'; // Asegurarse de que el texto sea visible
+            tr.style.fontWeight ='bold';
         }
 
         tr.innerHTML = `
@@ -269,108 +272,192 @@ function renderizarValores(data) {
     // Insertar tabla en el contenedor
     container.appendChild(table);
 }
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    cargarCooperativas();
-    document.getElementById("filtrarReporte").addEventListener("click", cargarPasajeros);
-});
-
-// Cargar las cooperativas en el selector
+// Función para cargar las cooperativas
 async function cargarCooperativas() {
     try {
         const response = await fetch("/api/cooperativas");
+
         if (!response.ok) {
-            throw new Error("Error al obtener cooperativas");
+            throw new Error(`Error al obtener cooperativas: ${response.statusText}`);
         }
 
         const cooperativas = await response.json();
-        const selectCooperativa = document.getElementById("cooperativaSelect");
 
+        return cooperativas;
+    } catch (error) {
+        alert("No se pudieron cargar las cooperativas.");
+        return [];
+    }
+}
+
+async function cargarPasajeros() {
+    const mes = document.getElementById("mesReporte").value;
+
+    // Validar selección de mes
+    if (!mes) {
+        alert("Por favor, seleccione un mes para generar el reporte.");
+        return;
+    }
+
+    // Contenedor donde se mostrará el select
+    const containerPasajeros = document.querySelector(".pasajeros");
+
+    // Verificar si el contenedor existe
+    if (!containerPasajeros) {
+        console.error("El contenedor de pasajeros no existe.");
+        return;
+    }
+
+    // Crear el label y select solo una vez
+    let labelCooperativa = document.querySelector("label[for='cooperativaSelect']");
+    let selectCooperativa = document.getElementById("cooperativaSelect");
+
+    if (!labelCooperativa) {
+        labelCooperativa = document.createElement("label");
+        labelCooperativa.setAttribute("for", "cooperativaSelect");
+        labelCooperativa.textContent = "Seleccione la cooperativa: ";
+
+        // Agregar el label primero (antes del select)
+        containerPasajeros.appendChild(labelCooperativa);
+    }
+
+    if (!selectCooperativa) {
+        selectCooperativa = document.createElement("select");
+        selectCooperativa.id = "cooperativaSelect";
+
+        // Agregar el select después del label
+        containerPasajeros.appendChild(selectCooperativa);
+    }
+
+
+    // Llamar a cargar las cooperativas
+    const cooperativas = await cargarCooperativas();
+
+    if (cooperativas.length > 0) {
+        // Limpiar las opciones anteriores
+        selectCooperativa.innerHTML = "";
+    
+        // Crear la opción predeterminada "TODAS LAS COOPERATIVAS"
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "--------------";
+        defaultOption.disabled = true;  // Deshabilitar la opción para evitar que sea seleccionada
+        defaultOption.selected = true;  // Seleccionar esta opción por defecto
+        selectCooperativa.appendChild(defaultOption);
+        const todas = document.createElement("option");
+        todas.value = "";
+        todas.textContent = "TODAS LAS COOPERATIVAS";
+        selectCooperativa.appendChild(todas);
+        // Agregar las cooperativas
         cooperativas.forEach(({ COOPERATIVA }) => {
             const option = document.createElement("option");
             option.value = COOPERATIVA;
             option.textContent = COOPERATIVA;
             selectCooperativa.appendChild(option);
         });
-    } catch (error) {
-        console.error("Error al cargar cooperativas:", error);
-        alert("No se pudieron cargar las cooperativas.");
+
+    } else {
+        console.error("No se cargaron cooperativas.");
     }
-}
+    
 
-// Cargar los pasajeros filtrados por mes y cooperativa
-async function cargarPasajeros() {
-    const mes = document.getElementById("mesReporte").value;
-    const cooperativa = document.getElementById("cooperativaSelect").value;
+    // Escuchar el cambio de cooperativa
+    selectCooperativa.addEventListener('change', async function () {
+        // Obtener la cooperativa seleccionada
+        const cooperativa = selectCooperativa.value;
 
-    if (!mes) {
-        alert("Por favor, seleccione un mes para generar el reporte.");
-        return;
-    }
+        // Obtener los datos de pasajeros
+        try {
+            const url = `/api/mensual-pasajeros?mes=${mes}${cooperativa ? `&cooperativa=${cooperativa}` : ""}`;
 
-    try {
-        const url = `/api/mensual-pasajeros?mes=${mes}${cooperativa ? `&cooperativa=${cooperativa}` : ""}`;
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error("Error al obtener el reporte mensual");
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error("Error al obtener el reporte mensual");
+            }
+
+            const data = await response.json();
+
+            renderizarPasajeros(data);
+        } catch (error) {
+            console.error("Error al cargar pasajeros:", error);
+            alert("No se pudo cargar el informe. Por favor, intente nuevamente.");
         }
-
-        const data = await response.json();
-        renderizarPasajeros(data);
-    } catch (error) {
-        console.error("Error:", error);
-        alert("No se pudo cargar el informe. Por favor, intente nuevamente.");
-    }
+    });
 }
 
-// Renderizar la tabla con los datos o mostrar un mensaje si no hay datos
+// Función para renderizar la tabla con los datos de pasajeros
 function renderizarPasajeros(data) {
     const container = document.querySelector(".pasajeros");
-    if (!container) {
-        console.error("El contenedor '.pasajeros' no existe.");
-        return;
+
+    // Limpiar tabla anterior si existe
+    const existingTable = container.querySelector("table");
+    if (existingTable) {
+        existingTable.remove();
     }
 
-    // Limpiar el contenido existente
-    container.innerHTML = "";
+       // Eliminar el mensaje previo si lo hay
+       const existingMessage = container.querySelector("p");
+       if (existingMessage) {
+           existingMessage.remove();
+       }
+   
+       // Verificar si hay datos
+       if (!data || data.length === 0) {
+           // Crear el mensaje si no hay datos
+           const message = document.createElement("p");
+           message.textContent = "No hay datos disponibles para la cooperativa seleccionada.";
+           message.style.textAlign = "center";  // Centrar el mensaje
+           container.appendChild(message);
+           return;
+       }
+   
+// Crear y agregar la tabla con los datos de pasajeros
+const table = document.createElement("table");
+table.classList.add("report-table");
 
-    if (data.length === 0) {
-        // Mostrar un mensaje si no hay datos
-        const message = document.createElement("p");
-        message.textContent = "No hay datos disponibles para la cooperativa seleccionada.";
-        message.style.textAlign = "center"; // Opcional, para centrar el mensaje
-        container.appendChild(message);
-        return;
-    }
+// Encabezados de la tabla
+const thead = document.createElement("thead");
+const headerRow = document.createElement("tr");
+headerRow.innerHTML = `
+    <th>Cooperativa</th>
+    <th>Destino</th>
+    <th>Total Pasajeros</th>
+`;
+thead.appendChild(headerRow);
+table.appendChild(thead);
 
-    // Crear y agregar nueva tabla
-    const table = document.createElement("table");
-    table.classList.add("report-table");
+// Cuerpo de la tabla
+const tbody = document.createElement("tbody");
+let totalPasajeros = 0;  // Variable para acumular el total de pasajeros
 
-    // Encabezados
-    const thead = document.createElement("thead");
-    const headerRow = document.createElement("tr");
-    headerRow.innerHTML = `
-        <th>Cooperativa</th>
-        <th>Destino</th>
-        <th>Total Pasajeros</th>
+data.forEach(({ COOPERATIVA, DESTINO, TOTAL_PASAJEROS }) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+        <td>${COOPERATIVA}</td>
+        <td>${DESTINO}</td>
+        <td>${TOTAL_PASAJEROS}</td>
     `;
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
+    tbody.appendChild(row);
 
-    // Cuerpo
-    const tbody = document.createElement("tbody");
-    data.forEach(({ COOPERATIVA, DESTINO, TOTAL_PASAJEROS }) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${COOPERATIVA}</td>
-            <td>${DESTINO}</td>
-            <td>${TOTAL_PASAJEROS}</td>
-        `;
-        tbody.appendChild(row);
-    });
+    // Sumar los pasajeros
+    totalPasajeros += TOTAL_PASAJEROS;
+});
 
-    table.appendChild(tbody);
-    container.appendChild(table);
+table.appendChild(tbody);
+
+// Agregar la fila con la sumatoria total de pasajeros
+const footerRow = document.createElement("tr");
+footerRow.innerHTML = `
+    <td colspan="2"><strong>Total Pasajeros</strong></td>
+    <td><strong>${totalPasajeros}</strong></td>
+`;
+
+footerRow.style.backgroundColor = '#007bff';  // Fondo azul
+footerRow.style.color = 'white';  // Texto blanco
+footerRow.style.fontWeight = 'bold';  // Hacer el texto más grueso
+tbody.appendChild(footerRow);
+
+// Agregar la tabla al contenedor
+container.appendChild(table);
 }

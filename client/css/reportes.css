@@ -149,6 +149,25 @@ th {
     display: none;
 }
 
+/* Estilo general para el contenedor del select */
+#cooperativaSelect {
+    padding: 8px 12px;  /* Añade espacio dentro del select */
+    font-size: 16px;  /* Tamaño de la fuente */
+    border: 1px solid #ccc;  /* Borde gris claro */
+    border-radius: 4px;  /* Bordes redondeados */
+    background-color: #fff;  /* Fondo blanco */
+    color: #333;  /* Color del texto */
+    transition: border-color 0.3s ease;  /* Transición suave para el borde */
+}
+
+/* Estilo para las opciones dentro del select */
+#cooperativaSelect option {
+    padding: 8px 12px;  /* Espaciado de las opciones */
+    background-color: #fff;  /* Fondo blanco para las opciones */
+    color: #333;  /* Color de texto */
+}
+
+
 
 @media (max-width: 768px) {
     .controls input {
