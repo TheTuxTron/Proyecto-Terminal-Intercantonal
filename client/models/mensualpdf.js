@@ -137,3 +137,6 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
     // Guardar PDF con el nombre de la tabla
     doc.save(`${nombrePdf}.pdf`);
 });
+
+
+

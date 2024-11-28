@@ -11,7 +11,6 @@ function toggleTable(className) {
     }
 }
 
-
 async function cargarDisco() {
     const mes = document.getElementById("mesReporte").value; // Formato: YYYY-MM
     if (!mes) {
@@ -201,6 +200,7 @@ function renderizarCumplimiento(data, mes) {
 
     // Insertar tabla en el contenedor
     container.appendChild(table);
+    
 }
 
 async function cargarValores() {
