@@ -69,9 +69,29 @@ async function cargarOpciones3() {
     }
 }
 
+async function cargarNumTicketInicial() {
+    try {
+        const response = await fetch('/api/get-num-ticket/REGISTRO');
+        if (!response.ok) throw new Error("Error al cargar NUM_TICKET");
+
+        const data = await response.json();
+        //console.log(`El menor NUM_TICKET en la tabla REGISTRO es:`, data.MINIMO_NUM_TICKET);
+
+        // Actualiza el valor del input con ID 'numTicket'
+        const numTicketElement = document.getElementById('numTicket');
+        if (numTicketElement) {
+            // Usa el valor para campos de tipo input
+            numTicketElement.value = data.MINIMO_NUM_TICKET ?? 'N/A';
+        }
+    } catch (error) {
+        console.error("Error al cargar el menor NUM_TICKET de la tabla REGISTRO:", error);
+    }
+}
+
 // Llamar a las funciones al cargar la página
 window.addEventListener('DOMContentLoaded', () => {
     cargarOpciones();
     cargarOpciones2();
     cargarOpciones3();
+    cargarNumTicketInicial();
 });

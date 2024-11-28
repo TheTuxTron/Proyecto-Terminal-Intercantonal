@@ -144,62 +144,63 @@ app.post('/api/registrarViaje', (req, res) => {
     });
 });
 
-// Endpoint para obtener destinos basados en la cooperativa seleccionada
+// Endpoint para obtener cooperativas basadas en la hora seleccionada
+app.get('/api/getCooperativas', (req, res) => {
+    const hora = req.query.hora;
+
+    if (!hora) {
+        return res.status(400).json({ error: 'Hora no proporcionada' });
+    }
+
+    const query = `
+        SELECT DISTINCT COOPERATIVA
+        FROM FRECUENCIAS
+        WHERE HORA = ?
+    `;
+
+    db.all(query, [hora], (err, rows) => {
+        if (err) {
+            console.error("Error al obtener cooperativas:", err);
+            return res.status(500).json({ error: 'Error al obtener cooperativas' });
+        }
+        res.json(rows); // Devuelve las cooperativas
+    });
+});
+
+
 app.get('/api/getDestinos', (req, res) => {
-    const cooperativa = req.query.cooperativa;
+    const { cooperativa, hora } = req.query;
 
     if (!cooperativa) {
         return res.status(400).json({ error: 'Cooperativa no proporcionada' });
     }
 
-    const query = `
+    // Si no se proporciona la hora, cargamos los destinos solo por cooperativa
+    let query = `
         SELECT DISTINCT DESTINO
         FROM FRECUENCIAS
         WHERE COOPERATIVA = ?
+        ORDER BY DESTINO
     `;
+    let params = [cooperativa];
 
-    db.all(query, [cooperativa], (err, rows) => {
+    // Si se proporciona la hora, se agrega a la consulta
+    if (hora) {
+        query = `
+            SELECT DISTINCT DESTINO
+            FROM FRECUENCIAS
+            WHERE COOPERATIVA = ? AND HORA = ?
+            ORDER BY DESTINO
+        `;
+        params.push(hora); // Se añade la hora a los parámetros
+    }
+
+    db.all(query, params, (err, rows) => {
         if (err) {
             console.error("Error al obtener destinos:", err);
             return res.status(500).json({ error: 'Error al obtener destinos' });
         }
-        res.json(rows); // Devuelve los destinos
-    });
-});
-
-// Endpoint para obtener horas y jornadas basadas en la cooperativa y destino
-app.get('/api/getHoras', (req, res) => {
-    const { cooperativa, destino } = req.query;
-
-    if (!cooperativa || !destino) {
-        return res.status(400).json({ error: 'Cooperativa o destino no proporcionados' });
-    }
-
-    // Obtener la hora actual
-    const horaActual = new Date().getHours(); // Esto devuelve la hora actual en formato 24 horas
-
-    // Determinar si es MAÑANA o TARDE
-    const jornada = horaActual < 13 ? 'MAÑANA' : 'TARDE';
-
-    const query = `
-        SELECT DISTINCT HORA
-        FROM FRECUENCIAS
-        WHERE JORNADA = ?
-        ORDER BY HORA
-    `;
-
-    const query2 = `
-        SELECT DISTINCT HORA
-        FROM FRECUENCIAS
-        WHERE COOPERATIVA = ? AND DESTINO = ? AND JORNADA = ?
-    `;
-
-    db.all(query, [/*cooperativa, destino,*/jornada], (err, rows) => {
-        if (err) {
-            console.error("Error al obtener horas:", err);
-            return res.status(500).json({ error: 'Error al obtener horas' });
-        }
-        res.json(rows); // Devuelve las horas con la jornada filtrada
+        res.json(rows); // Devuelve los destinos filtrados
     });
 });
 
@@ -760,5 +761,29 @@ ORDER BY
 
         // Devuelve la respuesta con los datos obtenidos
         res.json(rows);
+    });
+});
+
+app.get('/api/get-num-ticket/:tabla', (req, res) => {
+    const { tabla } = req.params;
+
+    // Validar que la tabla sea una de las permitidas
+    if (tabla !== 'REGISTRO' && tabla !== 'REGISTRO_EXTRA') {
+        return res.status(400).json({ error: 'Tabla no válida' });
+    }
+
+    // Consulta SQL
+    const query = `SELECT MAX(NUM_TICKET)+1 AS MINIMO_NUM_TICKET FROM ${tabla}`;
+
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error('Error al obtener el mayor NUM_TICKET:', err.message);
+            return res.status(500).json({ error: 'Error al obtener datos' });
+        }
+
+        // Verifica que haya filas en el resultado
+        const result = rows[0];
+        //console.log(`Resultado para la tabla ${tabla}:`, result);
+        res.json(result || { MINIMO_NUM_TICKET: null });
     });
 });
