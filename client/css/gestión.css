@@ -1,0 +1,112 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #eff1f5;
+}
+
+.container {
+    max-width: 85%;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding-bottom: 15px;
+}
+
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+table {
+    margin-top: 20px;
+    width: 100%;  /* Asegura que la tabla ocupe el 100% del ancho del contenedor */
+    border-collapse: collapse;
+    background-color: #fffbfb;
+    margin-bottom: 30px;
+    box-sizing: border-box; /* Incluye padding y border dentro del cálculo del ancho */
+}
+
+th, td {
+    border: 1px solid white;
+    padding: 8px;  /* Aumenta el padding para mejorar la legibilidad */
+    text-align: center;
+}
+
+th {
+    background-color: #a0b8d2;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9; /* Alternar color */
+}
+
+/* General: Estilos para los inputs y selects */
+table td input[type="text"],
+table td select {
+  width: 90%; /* Asegura que se adapten al tamaño de la celda */
+  padding: 5px;
+  font-size: 14px;
+  border: 1px solid #ccc; /* Borde sutil */
+  border-radius: 4px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Efecto de profundidad */
+  transition: border-color 0.3s, box-shadow 0.3s; /* Transiciones suaves */
+}
+
+/* Estilo cuando el input/select tiene el foco */
+table td input[type="text"]:focus,
+table td select:focus {
+  border-color: #007bff; /* Azul para indicar foco */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Resaltado */
+  outline: none; /* Elimina el contorno por defecto */
+}
+
+#buscarUsuario {
+    width: 100%; /* Se ajusta al ancho del contenedor */
+    max-width: 98%; /* Evita exceder el ancho disponible */
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+
+.btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.editar, .guardar{
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.editar:hover, .guardar:hover{
+    background-color: #0056b3;
+    color: #fff;
+}
+
+
+@media (max-width: 768px) {
+    .controls input {
+        width: 90%;
+    }
+
+    table {
+        font-size: 10px;
+    }
+}

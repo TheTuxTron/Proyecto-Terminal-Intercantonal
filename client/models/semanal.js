@@ -4,6 +4,7 @@ const fechaFinInput = document.getElementById('fechaFin');
 let fechaInicio = null;
 let fechaFin = null;
 
+
 // Función para actualizar la restricción de la fecha de fin
 function actualizarRestriccionFechaFin() {
     const fechaInicioStr = fechaInicioInput.value;
@@ -102,6 +103,7 @@ fechaFinInput.addEventListener('change', (event) => {
             obtenerValoresPorFecha(fechaInicioStr, fechaFinStr);
             // Generar informe condensado
             generarInformeCondensado('informeCondensado',fechaInicioStr, fechaFinStr);
+            generarInformeCondensadoD('informeCondensadoD',fechaInicioStr, fechaFinStr);
     
         } catch (error) {
             console.error("Error al cargar los registros:", error);
@@ -110,7 +112,11 @@ fechaFinInput.addEventListener('change', (event) => {
     
 
     // Agregar evento de clic al botón para cargar los registros
-    document.getElementById('generarInformeBtn').addEventListener('click', cargarRegistros);
+    document.getElementById('generarInformeBtn').addEventListener('click', () => {
+        cargarRegistros(); // Llama a la función para cargar registros
+        document.getElementById("observaciones").style.display = "block"; // Cambia el estilo a block
+    });
+    
 
 
     function generarFechas(fechaInicioInput, fechaFinInput) {
@@ -343,7 +349,7 @@ fechaFinInput.addEventListener('change', (event) => {
     // Fila de separación para los Extras
     tabla += `
         <tr>
-            <td colspan="${fechas.length * 2 + 3}" style="text-align:center; font-weight:bold; background-color:#f0f0f0;">EXTRAS</td>
+            <td colspan="${fechas.length * 2 + 4}" style="text-align:center; font-weight:bold; background-color:#f0f0f0;">EXTRAS</td>
         </tr>
     `;
 
@@ -496,6 +502,7 @@ function obtenerValoresPorFecha(fechaInicio, fechaFin) {
                             <td>${'$'+row.TOTAL_DIA}</td>
                         </tr>
                     `;
+
                 } else {
                     totalMananaArray.push(0);
 
@@ -682,6 +689,169 @@ function generarInformeCondensado(containerId, fechaInicio, fechaFin) {
                     <td class="total">${totalNoCumplen}</td>
                     <td class="total">${porcentajeCumplimientoTotal.toFixed(2)}%</td>
                     <td class="total">${totalSemanal}</td>
+                    <td class="total">${totalDiaria}</td>
+                </tr>
+            `;
+            tablaCondensada += `</tbody></table>`;
+        container.innerHTML = tablaCondensada;
+    })
+    .catch(error => {
+        console.error('Error al cargar los registros:', error);
+    });
+}
+
+
+function generarInformeCondensadoD(containerId, fechaInicio, fechaFin) {
+    const container = document.getElementById(containerId);
+
+    // Generar rango de fechas
+    function getFechasRango(fechaInicio, fechaFin) {
+        const start = new Date(fechaInicio);
+        const end = new Date(fechaFin);
+        const fechas = [];
+
+        while (start <= end) {
+            fechas.push(start.toISOString().split('T')[0]);
+            start.setDate(start.getDate() + 1);
+        }
+
+        return fechas;
+    }
+
+    fetch(`/api/condens?startDate=${fechaInicio}&endDate=${fechaFin}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Error al obtener los datos del backend');
+            return response.json();
+        })
+        .then(rows => {
+            const fechas = getFechasRango(fechaInicio, fechaFin);
+
+            // Inicialización de datos
+            let totalesPorDia = fechas.map(() => ({ totalManana: 0, totalTarde: 0 }));
+            let dataPorCooperativa = {};
+            let totalCumplen = 0, totalNoCumplen = 0, totalSemanal = 0, totalDiaria = 0;
+
+            rows.forEach(row => {
+                const {
+                    COOPERATIVA,
+                    FECHA,
+                    frecuencias_manana = 0,
+                    frecuencias_tarde = 0,
+                    frecuencias_cumplidas_totales = 0,
+                    frecuencias_no_cumplidas = 0,
+                    porcentaje_cumplimiento = 0,
+                    frecuencia_semanal = 0,
+                    valor_diario = 0
+                } = row;
+
+                if (!dataPorCooperativa[COOPERATIVA]) {
+                    dataPorCooperativa[COOPERATIVA] = {
+                        cooperativa: COOPERATIVA,
+                        frecuencias: fechas.map(() => ({ manana: 0, tarde: 0 })),
+                        resumen: {
+                            cumplen: 0,
+                            noCumplen: 0,
+                            cumplimiento: 0,
+                            semanal: 0,
+                            diaria: 0
+                        }
+                    };
+                }
+
+                const index = fechas.indexOf(FECHA);
+                if (index >= 0) {
+                    dataPorCooperativa[COOPERATIVA].frecuencias[index] = {
+                        manana: frecuencias_manana,
+                        tarde: frecuencias_tarde
+                    };
+                }
+
+                // Actualizar totales por cooperativa
+                dataPorCooperativa[COOPERATIVA].resumen = {
+                    cumplen: frecuencias_cumplidas_totales,
+                    noCumplen: frecuencias_no_cumplidas,
+                    cumplimiento: porcentaje_cumplimiento,
+                    semanal: frecuencia_semanal,
+                    diaria: valor_diario
+                };
+            });
+
+            const data = Object.values(dataPorCooperativa);
+
+            // Calcular totales generales
+            data.forEach(cooperativaData => {
+                totalCumplen += cooperativaData.resumen.cumplen;
+                totalNoCumplen += cooperativaData.resumen.noCumplen;
+                totalSemanal += cooperativaData.resumen.semanal;
+                totalDiaria += cooperativaData.resumen.diaria;
+            });
+
+            const porcentajeCumplimientoTotal = totalSemanal > 0 ? (totalCumplen * 100) / totalSemanal : 0;
+
+            
+        // Generar la tabla condensada
+        let tablaCondensada = `
+        <table border="1">
+            <thead>
+                <tr>
+                    <th colspan="${fechas.length * 2 + 7}">INFORME SEMANAL CONDENSADO DE SALIDA DE FRECUENCIAS INTRACANTONALES</th>
+                </tr>
+                <tr>
+                    <th colspan="${fechas.length * 2 + 7}">SEMANA DEL: ${fechaInicio} al ${fechaFin}</th>
+                </tr>
+                <tr>
+                   <th>COOPERATIVA</th>
+                    ${fechas.map(fecha => {
+                        const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                        const fechaOriginal = new Date(fecha);
+                        const diaIndex = fechaOriginal.getDay() + 1;
+                        const nombreDia = diasSemana[diaIndex > 6 ? 0 : diaIndex];
+                        const nuevaFecha = new Date(fechaOriginal);
+                        nuevaFecha.setDate(nuevaFecha.getDate() + 1);
+                        const numeroDia = nuevaFecha.getDate();
+                        return `<th colspan="2">${nombreDia} ${numeroDia}</th>`;
+                    }).join('')}
+                    <th rowspan="2">F. cumplen</th>
+                    <th rowspan="2">F. no cumplen</th>
+                    <th rowspan="2">% cumplimiento</th>
+                    <th rowspan="2">F. Diaria</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    ${fechas.map(() => `<th>AM</th><th>PM</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+        `;
+
+        data.forEach(cooperativaData => {
+            tablaCondensada += `
+                <tr>
+                    <td>${cooperativaData.cooperativa}</td>
+                    ${cooperativaData.frecuencias.map((dia, index) => {
+                        totalesPorDia[index].totalManana += dia.manana;
+                        totalesPorDia[index].totalTarde += dia.tarde;
+                        return `<td>${dia.manana}</td><td>${dia.tarde}</td>`;
+                    }).join('')}
+                    <td>${cooperativaData.resumen.cumplen}</td>
+                    <td>${cooperativaData.resumen.noCumplen}</td>
+                    <td>${cooperativaData.resumen.cumplimiento}%</td>
+                    <td>${cooperativaData.resumen.diaria}</td>
+                </tr>
+            `;
+        });
+
+        // Calcular el porcentaje total de cumplimiento
+        const porcentajeTotalCumplimiento = totalSemanal > 0 ? (totalCumplen * 100) / totalSemanal : 0;
+
+        // Agregar fila de totales
+        tablaCondensada += `
+                <tr>
+                    <td class="total"><strong>TOTAL</strong></td>
+                    ${totalesPorDia.map(dia => `<td class="total">${dia.totalManana}</td><td class="total">${dia.totalTarde}</td>`).join('')}
+                    <td class="total">${totalCumplen}</td>
+                    <td class="total">${totalNoCumplen}</td>
+                    <td class="total">${porcentajeCumplimientoTotal.toFixed(2)}%</td>
                     <td class="total">${totalDiaria}</td>
                 </tr>
             `;

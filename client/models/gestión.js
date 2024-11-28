@@ -1,18 +1,7 @@
-function cargarSeccion(seccion) {
+document.addEventListener('DOMContentLoaded', () => {
     const contenidoPrincipal = document.getElementById('contenidoPrincipal');
-    contenidoPrincipal.innerHTML = '';  // Limpiar contenido anterior
-
-    switch (seccion) {
-        case 'usuarios':
-            cargarUsuarios(contenidoPrincipal);
-            break;
-        case 'frecuencias':
-            cargarFrecuencias(contenidoPrincipal);
-            break;
-        default:
-            contenidoPrincipal.innerHTML = '<p>Sección no encontrada.</p>';
-    }
-}
+    cargarUsuarios(contenidoPrincipal);
+});
 
 async function cargarUsuarios(contenidoPrincipal) {
     const contenedor = document.createElement('div');
@@ -31,23 +20,11 @@ async function cargarUsuarios(contenidoPrincipal) {
         busqueda.id = 'buscarUsuario';
         busqueda.addEventListener('input', filtrarUsuarios);
 
-        // Crear título
-        const titulo = document.createElement('h2');
-        titulo.innerText = 'Gestión de Usuarios';
 
         // Crear contenedor para la barra de búsqueda y el botón
         const contenedorBusquedaYBoton = document.createElement('div');
 
-        // Crear botón para mostrar el formulario
-        //const btnNuevoUsuario = document.createElement('button');
-        // btnNuevoUsuario.innerText = 'Nuevo Usuario';
-        // btnNuevoUsuario.id = 'btnNuevoUsuario';
-        // btnNuevoUsuario.addEventListener('click', () => {
-        //     formAgregarUsuario.style.display = formAgregarUsuario.style.display === 'none' ? 'block' : 'none';
-        // });
-
-        // Añadir barra de búsqueda y botón al contenedor
-        contenedorBusquedaYBoton.appendChild(busqueda);
+                contenedorBusquedaYBoton.appendChild(busqueda);
         //contenedorBusquedaYBoton.appendChild(btnNuevoUsuario);
 
         // Crear formulario para agregar usuario (inicialmente oculto)
@@ -79,7 +56,7 @@ async function cargarUsuarios(contenidoPrincipal) {
         const tabla = document.createElement('table');
         tabla.id = 'tablaUsuarios';
         const encabezado = document.createElement('tr');
-        encabezado.innerHTML = '<th>Cédula</th><th>Nombre</th><th>Celular</th><th>Rol</th><th>Operaciones</th>';
+        encabezado.innerHTML = '<th>Cédula</th><th>Nombre</th><th>Celular</th><th>Rol</th><th>Estado</th><th>Acción</th>';
         tabla.appendChild(encabezado);
 
         // Crear un espacio antes de la tabla
@@ -94,6 +71,7 @@ async function cargarUsuarios(contenidoPrincipal) {
                 <td>${usuario.NOMBRE || 'Sin nombre'}</td>
                 <td>${usuario.NUMERO_CELULAR || 'Sin celular'}</td>
                 <td>${usuario.ROL || 'Sin rol'}</td>
+                <td>${usuario.ESTADO || 'Sin estado'}</td>
                 <td>
                     <button class="editar">Editar</button>
                     <button class="guardar" style="display:none;">Guardar</button>
@@ -116,7 +94,6 @@ async function cargarUsuarios(contenidoPrincipal) {
 
         });
         contenedorBusquedaYBoton.appendChild(tabla);
-        contenedor.appendChild(titulo);
         contenedor.appendChild(busqueda);
         //contenedor.appendChild(btnNuevoUsuario);  // Agregar el botón "Nuevo Usuario"
         contenedor.appendChild(formAgregarUsuario);  // Agregar el formulario al contenedor
@@ -163,6 +140,7 @@ async function cargarUsuarios(contenidoPrincipal) {
             const nombreCelda = celdas[1];
             const celularCelda = celdas[2];
             const rolCelda = celdas[3];
+            const estadoCelda = celdas[4];
 
             nombreCelda.innerHTML = `<input type="text" value="${nombreCelda.textContent}">`;
             celularCelda.innerHTML = `<input type="text" value="${celularCelda.textContent}">`;
@@ -173,7 +151,12 @@ async function cargarUsuarios(contenidoPrincipal) {
                     <option value="secretaria" ${rolCelda.textContent === 'secretaria' ? 'selected' : ''}>Secretaria</option>
                     </select>
             `;
-
+            estadoCelda.innerHTML = `
+                <select>
+                    <option value="activo" ${estadoCelda.textContent === 'activo' ? 'selected' : ''}>activo</option>
+                    <option value="inactivo" ${estadoCelda.textContent === 'inactivo' ? 'selected' : ''}>inactivo</option>
+                    </select>
+            `;
             btnEditar.style.display = 'none';
             btnGuardar.style.display = '';
         }
@@ -183,8 +166,9 @@ async function cargarUsuarios(contenidoPrincipal) {
             const nombre = celdas[1].querySelector('input').value;
             const celular = celdas[2].querySelector('input').value;
             const rol = celdas[3].querySelector('select').value;
+            const estado = celdas[4].querySelector('select').value;
 
-            const datos = { nombre, celular, rol };
+            const datos = { nombre, celular, rol, estado };
             console.log('Datos enviados:', datos);
 
             fetch(`/api/usuarios/${cedula}`, {
@@ -198,6 +182,7 @@ async function cargarUsuarios(contenidoPrincipal) {
                     celdas[1].textContent = nombre;
                     celdas[2].textContent = celular;
                     celdas[3].textContent = rol;
+                    celdas[4].textContent = estado;
 
                     btnGuardar.style.display = 'none';
                     btnEditar.style.display = '';
@@ -215,7 +200,7 @@ async function cargarUsuarios(contenidoPrincipal) {
         console.error('Error cargando los usuarios:', error);
     }
 }
-
+/* 
 async function cargarFrecuencias(contenidoPrincipal) {
     const contenedor = document.createElement('div');
 
@@ -351,3 +336,4 @@ async function cargarFrecuencias(contenidoPrincipal) {
         console.error('Error cargando las frecuencias:', error);
     }
 }
+ */

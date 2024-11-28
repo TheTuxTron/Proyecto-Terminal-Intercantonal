@@ -6,7 +6,7 @@ body {
 }
 
 .container {
-    max-width: 100%;
+    max-width: 85%;
     margin: 0 auto;
 }
 
@@ -38,6 +38,7 @@ h1 {
 }
 
 table {
+    margin-top: 20px;
     width: 100%;  /* Asegura que la tabla ocupe el 100% del ancho del contenedor */
     border-collapse: collapse;
     background-color: #fffbfb;
@@ -53,6 +54,7 @@ th, td {
 
 #valores td {
     text-align: left;
+    width: 85%;
 }
 
 th {
@@ -103,6 +105,69 @@ th {
     background-color: #0056b3;
     color: #fff;
 }
+
+#depósito {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* Dos columnas: la primera más pequeña para los labels, la segunda más ancha para los inputs */
+    gap: 20px 75px; /* Espacio entre filas (20px) y columnas (15px) */
+    margin: 0 auto; /* Centra el formulario */
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding-bottom: 15px;
+}
+
+
+#formDeposito {
+    width: 100%;
+}
+
+.form-group {
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* Cada label y input estarán en columnas separadas */
+    gap: 10px; /* Espacio entre el label y el input */
+}
+
+#formDeposito label {
+    text-align: left; /* Asegura que el texto del label esté alineado a la izquierda */
+}
+
+#formDeposito input, 
+#formDeposito textarea {
+    padding: 10px;
+    width: 100%; /* Asegura que los inputs ocupen todo el ancho de su celda */
+    max-width: 100%; /* Hace que el input no se estire demasiado */
+    box-sizing: border-box; /* Asegura que el padding se incluya en el ancho total */
+}
+
+#formDeposito textarea {
+    width: 100%;
+}
+
+.disco, .pasajeros, .valores, .cumplimiento {
+    display: none;
+}
+
+/* Estilo general para el contenedor del select */
+#cooperativaSelect {
+    padding: 8px 12px;  /* Añade espacio dentro del select */
+    font-size: 16px;  /* Tamaño de la fuente */
+    border: 1px solid #ccc;  /* Borde gris claro */
+    border-radius: 4px;  /* Bordes redondeados */
+    background-color: #fff;  /* Fondo blanco */
+    color: #333;  /* Color del texto */
+    transition: border-color 0.3s ease;  /* Transición suave para el borde */
+}
+
+/* Estilo para las opciones dentro del select */
+#cooperativaSelect option {
+    padding: 8px 12px;  /* Espaciado de las opciones */
+    background-color: #fff;  /* Fondo blanco para las opciones */
+    color: #333;  /* Color de texto */
+}
+
+
 
 @media (max-width: 768px) {
     .controls input {

@@ -442,18 +442,22 @@ app.get('/api/usuarios', (req, res) => {
 
 app.put('/api/usuarios/:cedula', (req, res) => {
     const cedula = req.params.cedula;
-    const { nombre, celular, rol } = req.body;
+    const { nombre, celular, rol, estado } = req.body;
 
-    const sql = `UPDATE USUARIOS SET NOMBRE = ?, NUMERO_CELULAR = ?, ROL = ? WHERE CEDULA = ?`;
-    db.run(sql, [nombre, celular, rol, cedula], function (err) {
+    // Consulta corregida sin la coma extra
+    const sql = `UPDATE USUARIOS SET NOMBRE = ?, NUMERO_CELULAR = ?, ROL = ?, ESTADO = ? WHERE CEDULA = ?`;
+
+    db.run(sql, [nombre, celular, rol, estado, cedula], function (err) {
         if (err) {
             console.error('Error en la base de datos:', err.message);
             return res.status(500).json({ error: 'Error al actualizar el usuario', detalles: err.message });
         }
-        res.json({ message: 'Usuario actualizado correctamente' });
+
+        // Confirmar éxito en la actualización
+        res.json({ message: 'Usuario actualizado correctamente', cambios: this.changes });
     });
-    
 });
+
 
 app.post('/api/registrarusuario', (req, res) => {
     const { cedula, nombre, celular, rol } = req.body;
@@ -472,9 +476,9 @@ app.post('/api/registrarusuario', (req, res) => {
             return res.status(400).json({ success: false, error: "El usuario ya está registrado." });
         } else {
             // Insertar el nuevo usuario
-            const query = `INSERT INTO USUARIOS (CEDULA, NOMBRE, NUMERO_CELULAR, ROL, CONTRASEÑA) 
-                           VALUES (?, ?, ?, ?, ?)`;
-            db.run(query, [cedula, nombre, celular, rol, "1234"], function (err) {
+            const query = `INSERT INTO USUARIOS (CEDULA, NOMBRE, NUMERO_CELULAR, ROL, CONTRASEÑA, ESTADO) 
+                           VALUES (?, ?, ?, ?, ?, ?)`;
+            db.run(query, [cedula, nombre, celular, rol, "1234", "activo"], function (err) {
                 if (err) {
                     console.error("Error al registrar el usuario:", err);
                     return res.status(500).json({ error: 'Error al registrar el usuario' });
@@ -485,24 +489,6 @@ app.post('/api/registrarusuario', (req, res) => {
     });
 });
 
-
-app.delete('/api/usuarios/:cedula', (req, res) => {
-    const cedula = req.params.cedula;
-
-    // SQL para eliminar un usuario basado en la cédula
-    const sql = `DELETE FROM USUARIOS WHERE CEDULA = ?`;
-
-    db.run(sql, [cedula], function (err) {
-        if (err) {
-            console.error('Error en la base de datos:', err.message);
-            return res.status(500).json({ error: 'Error al eliminar el usuario', detalles: err.message });
-        }
-        if (this.changes === 0) {
-            return res.status(404).json({ message: 'Usuario no encontrado' });
-        }
-        res.json({ message: 'Usuario eliminado correctamente' });
-    });
-});
 
 // Definir la ruta para obtener las frecuencias
 app.get('/api/frecuenciasg', (req, res) => {
@@ -762,6 +748,392 @@ ORDER BY
         // Devuelve la respuesta con los datos obtenidos
         res.json(rows);
     });
+});
+
+app.get('/api/ticketsN', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = `
+        SELECT CONCAT(
+            (SELECT NUM_TICKET
+             FROM REGISTRO
+             WHERE FECHA BETWEEN ? AND ?
+             ORDER BY NUM_TICKET ASC
+             LIMIT 1),
+            ' a ',
+            (SELECT NUM_TICKET
+             FROM REGISTRO
+             WHERE FECHA BETWEEN ? AND ?
+             ORDER BY NUM_TICKET DESC
+             LIMIT 1)
+        ) AS RANGO_TICKET;
+    `;
+
+    db.get(query, [startDate, endDate, startDate, endDate], (err, row) => { // Cambiado de db.all a db.get
+        if (err) {
+            console.error("Error al obtener los valores:", err);
+            return res.status(500).json({ error: 'Error al obtener los valores' });
+        }
+
+        res.json(row || { RANGO_TICKET: 'No hay datos en el rango proporcionado' });
+    });
+});
+
+app.get('/api/ticketsE', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = `
+        SELECT CONCAT(
+            (SELECT NUM_TICKET
+             FROM REGISTRO_EXTRA
+             WHERE FECHA BETWEEN ? AND ?
+             ORDER BY NUM_TICKET ASC
+             LIMIT 1),
+            ' a ',
+            (SELECT NUM_TICKET
+             FROM REGISTRO_EXTRA
+             WHERE FECHA BETWEEN ? AND ?
+             ORDER BY NUM_TICKET DESC
+             LIMIT 1)
+        ) AS RANGO_TICKET;
+    `;
+
+    db.get(query, [startDate, endDate, startDate, endDate], (err, row) => { // Cambiado de db.all a db.get
+        if (err) {
+            console.error("Error al obtener los valores:", err);
+            return res.status(500).json({ error: 'Error al obtener los valores' });
+        }
+
+        res.json(row || { RANGO_TICKET: 'No hay datos en el rango proporcionado' });
+    });
+});
+
+
+app.get('/api/total', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = `
+        SELECT 
+        SUM(VALOR) AS TOTAL_DIA -- Total de todos los valores recaudados en el rango de fechas
+        FROM (
+            SELECT FECHA, HORA, VALOR FROM REGISTRO_EXTRA
+            WHERE FECHA BETWEEN ? AND ? -- reemplaza con las fechas deseadas
+            UNION ALL
+            SELECT FECHA, HORA, VALOR FROM REGISTRO
+            WHERE FECHA BETWEEN ? AND ? -- reemplaza con las fechas deseadas
+        ) AS combined_records;
+    `;
+
+    db.get(query, [startDate, endDate, startDate, endDate], (err, row) => { // Cambiado de db.all a db.get
+        if (err) {
+            console.error("Error al obtener los valores:", err);
+            return res.status(500).json({ error: 'Error al obtener los valores' });
+        }
+        res.json(row);
+    }); // Cierre de db.get
+}); // Cierre de app.get
+
+app.get('/api/mensual-disco', (req, res) => {
+    const { mes } = req.query;
+
+    if (!mes) {
+        return res.status(400).json({ error: 'Debe proporcionar el mes en formato YYYY-MM' });
+    }
+
+    const query = `
+       WITH REGISTROS_COMBINADOS AS (
+        SELECT 
+            FECHA,
+            CASE 
+                WHEN CAST(SUBSTR(HORA, 1, 2) AS INTEGER) < 13 
+                    OR (CAST(SUBSTR(HORA, 1, 2) AS INTEGER) = 13 AND CAST(SUBSTR(HORA, 4, 2) AS INTEGER) = 0) THEN 'MAÑANA'
+                ELSE 'TARDE'
+            END AS TURNO,
+            TIPO_FREC,
+            COUNT(*) AS FRECUENCIAS
+        FROM REGISTRO
+        WHERE TIPO_FREC IN ('NORMAL', 'EXTRA') 
+        AND strftime('%Y-%m', FECHA) = ?
+        GROUP BY FECHA, TURNO, TIPO_FREC
+
+        UNION ALL
+
+        SELECT 
+            FECHA,
+            CASE 
+                WHEN CAST(SUBSTR(HORA, 1, 2) AS INTEGER) < 13 
+                    OR (CAST(SUBSTR(HORA, 1, 2) AS INTEGER) = 13 AND CAST(SUBSTR(HORA, 4, 2) AS INTEGER) = 0) THEN 'MAÑANA'
+                ELSE 'TARDE'
+            END AS TURNO,
+            TIPO_FREC,
+            COUNT(*) AS FRECUENCIAS
+        FROM REGISTRO_EXTRA
+        WHERE TIPO_FREC IN ('NORMAL', 'EXTRA') 
+        AND strftime('%Y-%m', FECHA) = ?
+        GROUP BY FECHA, TURNO, TIPO_FREC
+    )
+    SELECT 
+        FECHA,
+        COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA NORMAL",
+        COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA EXTRA",
+        COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO TARDE NORMAL",
+        COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO TARDE EXTRA",
+        COALESCE(SUM(FRECUENCIAS), 0) AS "TOTAL DIARIO FRECUENCIAS"
+    FROM REGISTROS_COMBINADOS
+    WHERE TURNO IN ('MAÑANA', 'TARDE')
+    GROUP BY FECHA
+
+    UNION ALL
+
+    SELECT
+        'TOTAL' AS FECHA,
+        COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA NORMAL",
+        COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA EXTRA",
+        COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO TARDE NORMAL",
+        COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO TARDE EXTRA",
+        COALESCE(SUM(FRECUENCIAS), 0) AS "TOTAL DIARIO FRECUENCIAS"
+    FROM REGISTROS_COMBINADOS
+
+    ORDER BY FECHA;
+    `;
+
+    db.all(query, [mes, mes], (err, rows) => {
+        if (err) {
+            console.error('Error al generar el reporte mensual:', err);
+            return res.status(500).json({ error: 'Error al generar el reporte mensual' });
+        }
+
+        res.json(rows); // Devuelve los datos agrupados por día
+    });
+});
+// Endpoint para obtener cumplimiento
+app.get('/api/cumplimiento', (req, res) => {
+    const { mesReporte } = req.query;
+
+    if (!mesReporte) {
+        return res.status(400).json({ error: 'Debe proporcionar el mes en formato YYYY-MM' });
+    }
+
+    const query = `
+        WITH frecuencias_totales AS (
+            SELECT
+                COOPERATIVA,
+                COUNT(*) AS total_frecuencias
+            FROM (
+                SELECT COOPERATIVA, HORA, FECHA, TIPO_FREC
+                FROM REGISTRO
+                WHERE strftime('%Y-%m', FECHA) = ?
+                UNION ALL
+                SELECT COOPERATIVA, HORA, FECHA, TIPO_FREC
+                FROM REGISTRO_EXTRA
+                WHERE strftime('%Y-%m', FECHA) = ?
+            ) AS todas_frecuencias
+            GROUP BY COOPERATIVA
+        ),
+        frecuencia_diaria AS (
+            SELECT
+                COOPERATIVA,
+                DIARIO
+            FROM CUMPLIMIENTO
+        ),
+        frecuencia_mensual AS (
+            SELECT
+                COOPERATIVA,
+                DIARIO,
+                (DIARIO * strftime('%d', ? || '-01', '+1 month', '-1 day')) AS frecuencia_mensual
+            FROM CUMPLIMIENTO
+        ),
+        reporte_cumplimiento AS (
+            SELECT
+                ft.COOPERATIVA,
+                fm.DIARIO AS frecuencia_diaria,
+                fm.frecuencia_mensual,
+                ft.total_frecuencias,
+                (fm.frecuencia_mensual - ft.total_frecuencias) AS frecuencias_no_cumplen,
+                ROUND(ft.total_frecuencias * 100.0 / fm.frecuencia_mensual, 2) AS porcentaje_cumplimiento
+            FROM frecuencias_totales ft
+            JOIN frecuencia_mensual fm ON ft.COOPERATIVA = fm.COOPERATIVA
+        )
+        SELECT 
+            COOPERATIVA,
+            frecuencia_diaria,
+            frecuencia_mensual,
+            total_frecuencias,
+            frecuencias_no_cumplen,
+            porcentaje_cumplimiento
+        FROM reporte_cumplimiento
+        UNION ALL
+        SELECT
+            'TOTAL' AS COOPERATIVA,
+            SUM(frecuencia_diaria) AS frecuencia_diaria,
+            SUM(frecuencia_mensual) AS frecuencia_mensual,
+            SUM(total_frecuencias) AS total_frecuencias,
+            SUM(frecuencias_no_cumplen) AS frecuencias_no_cumplen,
+            ROUND(AVG(porcentaje_cumplimiento), 2) AS porcentaje_cumplimiento
+        FROM reporte_cumplimiento
+        ORDER BY COOPERATIVA;
+    `;
+
+    db.all(query, [mesReporte, mesReporte, mesReporte], (err, rows) => {
+        if (err) {
+            console.error("Error al obtener frecuencias:", err);
+            return res.status(500).json({ error: 'Error al obtener frecuencias' });
+        }
+
+        res.json(rows); // Devuelve los datos obtenidos
+    });
+});
+
+app.get('/api/mensual-valores', (req, res) => {
+    const { mes } = req.query;
+
+    if (!mes) {
+        return res.status(400).json({ error: 'Debe proporcionar el mes en formato YYYY-MM' });
+    }
+
+    const query = `
+       WITH REGISTROS_COMBINADOS AS (
+        SELECT 
+            FECHA,
+            CASE 
+                WHEN CAST(SUBSTR(HORA, 1, 2) AS INTEGER) < 13 
+                    OR (CAST(SUBSTR(HORA, 1, 2) AS INTEGER) = 13 AND CAST(SUBSTR(HORA, 4, 2) AS INTEGER) = 0) THEN 'MAÑANA'
+                ELSE 'TARDE'
+            END AS TURNO,
+            TIPO_FREC,
+            SUM(VALOR) AS TOTAL_VALORES -- Cambiado para sumar valores en lugar de contar frecuencias
+        FROM REGISTRO
+        WHERE TIPO_FREC IN ('NORMAL', 'EXTRA') 
+        AND strftime('%Y-%m', FECHA) = ?
+        GROUP BY FECHA, TURNO, TIPO_FREC
+
+        UNION ALL
+
+        SELECT 
+            FECHA,
+            CASE 
+                WHEN CAST(SUBSTR(HORA, 1, 2) AS INTEGER) < 13 
+                    OR (CAST(SUBSTR(HORA, 1, 2) AS INTEGER) = 13 AND CAST(SUBSTR(HORA, 4, 2) AS INTEGER) = 0) THEN 'MAÑANA'
+                ELSE 'TARDE'
+            END AS TURNO,
+            TIPO_FREC,
+            SUM(VALOR) AS TOTAL_VALORES -- Cambiado para sumar valores en lugar de contar frecuencias
+        FROM REGISTRO_EXTRA
+        WHERE TIPO_FREC IN ('NORMAL', 'EXTRA') 
+        AND strftime('%Y-%m', FECHA) = ?
+        GROUP BY FECHA, TURNO, TIPO_FREC
+    )
+    SELECT 
+        FECHA,
+        COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'NORMAL' THEN TOTAL_VALORES END), 0) AS "TURNO MAÑANA NORMAL",
+        COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'EXTRA' THEN TOTAL_VALORES END), 0) AS "TURNO MAÑANA EXTRA",
+        COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'NORMAL' THEN TOTAL_VALORES END), 0) AS "TURNO TARDE NORMAL",
+        COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'EXTRA' THEN TOTAL_VALORES END), 0) AS "TURNO TARDE EXTRA",
+        COALESCE(SUM(TOTAL_VALORES), 0) AS "TOTAL DIARIO VALORES"
+    FROM REGISTROS_COMBINADOS
+    WHERE TURNO IN ('MAÑANA', 'TARDE')
+    GROUP BY FECHA
+
+    UNION ALL
+
+    SELECT
+        'TOTAL' AS FECHA,
+        COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'NORMAL' THEN TOTAL_VALORES END), 0) AS "TURNO MAÑANA NORMAL",
+        COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'EXTRA' THEN TOTAL_VALORES END), 0) AS "TURNO MAÑANA EXTRA",
+        COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'NORMAL' THEN TOTAL_VALORES END), 0) AS "TURNO TARDE NORMAL",
+        COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'EXTRA' THEN TOTAL_VALORES END), 0) AS "TURNO TARDE EXTRA",
+        COALESCE(SUM(TOTAL_VALORES), 0) AS "TOTAL DIARIO VALORES"
+    FROM REGISTROS_COMBINADOS
+
+    ORDER BY FECHA;
+
+    `;
+
+    db.all(query, [mes, mes], (err, rows) => {
+        if (err) {
+            console.error('Error al generar el reporte mensual:', err);
+            return res.status(500).json({ error: 'Error al generar el reporte mensual' });
+        }
+
+        res.json(rows); // Devuelve los datos agrupados por día
+    });
+});
+
+app.get('/api/mensual-pasajeros', (req, res) => {
+    const { mes, cooperativa } = req.query;
+
+    if (!mes) {
+        return res.status(400).json({ error: 'Debe proporcionar el mes en formato YYYY-MM' });
+    }
+
+    let query = `
+        WITH REGISTROS_COMBINADOS AS (
+            SELECT COOPERATIVA, DESTINO, NUM_PASAJEROS, FECHA
+            FROM REGISTRO
+            UNION ALL
+            SELECT COOPERATIVA, DESTINO, NUM_PASAJEROS, FECHA
+            FROM REGISTRO_EXTRA
+        )
+        SELECT 
+            COOPERATIVA,
+            DESTINO,
+            SUM(NUM_PASAJEROS) AS TOTAL_PASAJEROS
+        FROM 
+            REGISTROS_COMBINADOS
+        WHERE 
+            strftime('%Y-%m', FECHA) = ?
+    `;
+
+    const params = [mes];
+
+    // Filtra por cooperativa si se proporciona
+    if (cooperativa) {
+        query += ` AND COOPERATIVA = ?`;
+        params.push(cooperativa);
+    }
+
+    query += `
+        GROUP BY 
+            COOPERATIVA, DESTINO
+        ORDER BY 
+            COOPERATIVA, DESTINO;
+    `;
+
+    db.all(query, params, (err, rows) => {
+        if (err) {
+            console.error('Error al generar el reporte mensual:', err);
+            return res.status(500).json({ error: 'Error al generar el reporte mensual' });
+        }
+
+        res.json(rows); // Devuelve los datos agrupados por cooperativa y destino
+    });
+});
+
+app.get('/api/cooperativas', (req, res) => {
+    try {
+        db.all('SELECT DISTINCT COOPERATIVA FROM FRECUENCIAS', [], (err, rows) => {
+            if (err) {
+                console.error("Error al obtener cooperativas:", err);
+                return res.status(500).json({ error: 'Error al obtener cooperativas' });
+            }
+            res.json(rows); // Devuelve los datos sin repeticiones
+        });
+    } catch (error) {
+        console.error("Error al obtener cooperativas:", error);
+        res.status(500).json({ error: 'Error al obtener cooperativas' });
+    }
 });
 
 app.get('/api/get-num-ticket/:tabla', (req, res) => {
