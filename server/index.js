@@ -49,7 +49,6 @@ app.get('/api/protegido', verificarToken, (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log("Intenta carga")
     try{
         console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
     }catch(error){

@@ -62,7 +62,7 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
         const centerX = (doc.internal.pageSize.width - textoWidth) / 2; // Calcular la posición X centrada
         doc.text(textoCentrado, centerX, 35); // Dibujar el texto centrado
         doc.setFontSize(14);
-        doc.text('Control Diario de Salida de Frecuencias', margin, 45); // Título
+        doc.text('Control Semanal de Salida de Frecuencias', margin, 45); // Título
         doc.setFontSize(10);
         doc.text(`Desde ${fechaInicioInput.value} hasta ${fechaFinInput.value}`, margin, 60); // Subtítulo
         currentY = 50; // Ajusta la posición inicial del contenido

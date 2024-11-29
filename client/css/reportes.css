@@ -52,10 +52,16 @@ th, td {
     text-align: center;
 }
 
+#valores {
+    width: 100%;            /* Asegura que la tabla ocupe todo el ancho disponible */
+    table-layout: fixed;    /* Hace que todas las celdas tengan el mismo ancho */
+}
+
 #valores td {
     text-align: left;
-    width: 85%;
+    width: 25%;             /* Asigna el 25% del ancho total a cada celda */
 }
+
 
 th {
     background-color: #a0b8d2;
