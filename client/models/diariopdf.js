@@ -249,8 +249,7 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
     secretaria.forEach((NOMBRE, index) => {
         doc.text(`Firma de Secretaria: ${NOMBRE+'__________________________________' || '__________________________________'}`, margin, currentY);
     });
-    // Guardar el PDF
-    doc.save(`Informe_Frecuencias_${fechaInicioInput.value}_to_${fechaFinInput.value}.pdf`);
+
     // Crear el PDF
     doc.save('Informe_Diario.pdf');
 });
