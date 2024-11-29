@@ -982,7 +982,7 @@ app.get('/api/cumplimiento', (req, res) => {
             SUM(frecuencias_no_cumplen) AS frecuencias_no_cumplen,
             ROUND(AVG(porcentaje_cumplimiento), 2) AS porcentaje_cumplimiento
         FROM reporte_cumplimiento
-        ORDER BY COOPERATIVA;
+        ORDER BY total_frecuencias;
     `;
 
     db.all(query, [mesReporte, mesReporte, mesReporte], (err, rows) => {
