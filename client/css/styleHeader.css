@@ -51,6 +51,24 @@
 #miNav a:hover {
   color: #000350;
 }
+#informe {
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 16px;
+  transition: color 0.3s, background-color 0.3s;
+  border: 2px solid #ffffff; /* Marco blanco */
+  padding: 8px 12px; /* Espaciado interno */
+  border-radius: 4px; /* Bordes redondeados */
+  display: inline-block; /* Asegura que se comporte como un botón */
+}
+
+/* Efecto hover en el enlace */
+#informe:hover {
+  color: #000350;
+  background-color: #ffffff; /* Fondo blanco en hover */
+}
+
 
 /* Diseño responsivo para pantallas pequeñas */
 @media (max-width: 768px) {
