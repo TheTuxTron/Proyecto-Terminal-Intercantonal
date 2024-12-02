@@ -10,11 +10,10 @@
 
 /* Estilos del contenedor principal para centrar el <main> */
 body, html {
-  padding-top: 120px; /* Ajusta según la altura del header */
-  padding-bottom: 80px; /* Ajusta según la altura del footer */
+  padding-top: 10px; /* Ajusta según la altura del header */
   margin: 0;
   width: 100%;
-  height: 100%;
+  height: 90%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -34,8 +33,8 @@ header {
 }
 
 main {
-  padding-top: 80px; /* Ajusta según la altura del header */
-  padding-bottom: 80px; /* Ajusta según la altura del footer */
+  padding-top: 10px; /* Ajusta según la altura del header */
+  padding-bottom: 10px; /* Ajusta según la altura del footer */
   width: 90%;
   max-width: 800px;
   padding: 20px;
@@ -54,11 +53,6 @@ main h1 {
   font-size: 24px;
   margin-bottom: 20px;
   text-align: center;
-}
-
-/* Estilos del formulario */
-#registroForm div {
-  margin-bottom: 15px;
 }
 
 #registroForm label {
@@ -80,7 +74,7 @@ main h1 {
   font-size: 16px;
   outline: none;
   transition: border-color 0.3s;
-  box-sizing: border-box;
+  box-sizing: border-box; 
 }
 
 
@@ -88,8 +82,64 @@ main h1 {
   border-color: #007bff;
 }
 
-/* Estilos del botón */
-#registroForm button {
+/* Configurar el formulario como una cuadrícula */
+#registroForm {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Tres columnas iguales */
+  gap: 10px; /* Espacio entre elementos */
+}
+
+/* Primera fila */
+#registroForm #fecha {
+  margin-bottom: 20px;
+  grid-column: 3; /* Primera columna */
+  grid-row: 3; /* Primera fila */
+}
+#registroForm #tipoFrecuencia {
+  margin-bottom: 20px;
+  grid-column: 2; /* Segunda columna */
+  grid-row: 1; /* Primera fila */
+}
+#registroForm #hora {
+  margin-bottom: 20px;
+  grid-column: 3; /* Tercera columna */
+  grid-row: 1; /* Primera fila */
+}
+
+/* Segunda fila */
+#registroForm #cooperativa {
+  margin-bottom: 20px;
+  grid-column: 1 / span 2; /* Ocupa las dos primeras columnas */
+  grid-row: 2; /* Segunda fila */
+}
+#registroForm #parroquiaContainer {
+  grid-column: span 2; /* Hace que este campo ocupe las dos columnas */
+}
+#registroForm #parroquia {
+  margin-bottom: 20px;
+  grid-column: 3; /* Tercera columna */
+  grid-row: 2; /* Segunda fila */
+}
+
+/* Tercera fila */
+#registroForm #frecuencia {
+  margin-bottom: 20px;
+  grid-column: 1; /* Primera columna */
+  grid-row: 3; /* Tercera fila */
+}
+#registroForm #numPasajeros {
+  margin-bottom: 20px;
+  grid-column: 2; /* Segunda columna */
+  grid-row: 3; /* Tercera fila */
+}
+#registroForm #numTicket {
+  margin-bottom: 20px;
+  grid-column: 3; /* Tercera columna */
+  grid-row: 1; /* Tercera fila */
+}
+
+
+#botonRegistrar {
   width: 100%;
   padding: 12px;
   font-size: 16px;
@@ -102,7 +152,7 @@ main h1 {
   transition: background-color 0.3s;
 }
 
-#registroForm button:hover {
+#botonRegistrar:hover {
   background-color: #0056b3;
   color: #fff;
 }

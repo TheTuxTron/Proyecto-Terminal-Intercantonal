@@ -106,11 +106,11 @@ document.getElementById('hora').addEventListener('change', async function () {
 
 
 document.getElementById('cooperativa').addEventListener('change', actualizarDestinos);
-//document.getElementById('hora').addEventListener('change', actualizarDestinos);
 
 async function actualizarDestinos() {
     const cooperativa = document.getElementById('cooperativa').value;
     let hora = document.getElementById('hora').value;
+    const tipoFrecuencia =document.getElementById("tipoFrecuencia").value;
     // Convertir el formato de la hora
     hora = hora.replace(":", "H");
 
@@ -119,7 +119,7 @@ async function actualizarDestinos() {
     }
 
     try {
-        const response = await fetch(`/api/getDestinos?cooperativa=${cooperativa}&hora=${hora}`);
+        const response = await fetch(`/api/getDestinos?cooperativa=${cooperativa}&hora=${hora}&tipoFrecuencia=${tipoFrecuencia}`);
         const data = await response.json();
 
         // Limpiar las opciones anteriores

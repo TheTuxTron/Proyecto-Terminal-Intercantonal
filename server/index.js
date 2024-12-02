@@ -49,7 +49,6 @@ app.get('/api/protegido', verificarToken, (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log("Intenta carga")
     try{
         console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
     }catch(error){
@@ -169,8 +168,8 @@ app.get('/api/getCooperativas', (req, res) => {
 
 
 app.get('/api/getDestinos', (req, res) => {
-    const { cooperativa, hora } = req.query;
-
+    const { cooperativa, hora, tipoFrecuencia } = req.query;
+    
     if (!cooperativa) {
         return res.status(400).json({ error: 'Cooperativa no proporcionada' });
     }
@@ -185,7 +184,7 @@ app.get('/api/getDestinos', (req, res) => {
     let params = [cooperativa];
 
     // Si se proporciona la hora, se agrega a la consulta
-    if (hora) {
+    if (hora && tipoFrecuencia === "NORMAL") {
         query = `
             SELECT DISTINCT DESTINO
             FROM FRECUENCIAS
