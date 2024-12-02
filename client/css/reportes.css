@@ -1,7 +1,8 @@
 body {
     font-family: Arial, sans-serif;
     margin: 0;
-    padding: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
     background-color: #eff1f5;
 }
 
@@ -52,10 +53,16 @@ th, td {
     text-align: center;
 }
 
+#valores {
+    width: 100%;            /* Asegura que la tabla ocupe todo el ancho disponible */
+    table-layout: fixed;    /* Hace que todas las celdas tengan el mismo ancho */
+}
+
 #valores td {
     text-align: left;
-    width: 85%;
+    width: 25%;             /* Asigna el 25% del ancho total a cada celda */
 }
+
 
 th {
     background-color: #a0b8d2;
@@ -83,7 +90,7 @@ th {
     color: white;
 }
 
-.btn-group {
+.btn-group, .btn-group-1 {
     display: flex;
     justify-content: center;
     gap: 15px;
@@ -100,11 +107,27 @@ th {
     cursor: pointer;
     border-radius: 5px;
 }
+.btn-group-1 button {
+    flex: 1; /* Hace que cada botón ocupe el mismo espacio */
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
 
 .btn-group button:hover {
     background-color: #0056b3;
     color: #fff;
 }
+
+.btn-group-1 button:hover {
+    background-color: #0056b3;
+    color: #fff;
+}
+
 
 #depósito {
     display: grid;

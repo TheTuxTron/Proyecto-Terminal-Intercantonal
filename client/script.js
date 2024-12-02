@@ -59,3 +59,4 @@ async function obtenerContenidoProtegido() {
 }
 
 //"Al principio, solo Dios y yo sabíamos cómo funcionaba este código. Ahora, solo Dios lo sabe." TTT
+//"No trate de entender el código, mejor haga otro." ch

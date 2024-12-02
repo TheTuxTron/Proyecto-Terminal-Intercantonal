@@ -1,44 +1,54 @@
-function mostrarTabla(tablaId) {
-    // Definir las tablas a mostrar/ocultar
-    const tablas = ['informeMatutino', 'informeVespertino', 'informeCondensadoD', 'informeAdicional'];
+// Establecer las tablas que estarán visibles por defecto (inicialmente todas ocultas)
+function inicializarTablas() {
+    const todasLasTablas = ['informeMatutino', 'informeVespertino', 'informeCondensadoD', 'valores', 'depósito'];
+    todasLasTablas.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.style.display = 'none';  // Inicialmente todas las tablas están ocultas
+        }
+    });
+}
 
-    // Ocultar todas las tablas
-    tablas.forEach(id => {
-        document.getElementById(id).style.display = 'none';
+// Función para mostrar u ocultar las tablas específicas
+function toggleDisplay(elementsToShow = [], elementsToHide = []) {
+    // Ocultar los elementos especificados en elementsToHide
+    elementsToHide.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.style.display = 'none';
+        }
     });
 
-    // Mostrar la tabla correspondiente
-    if (tablaId) {
-        document.getElementById(tablaId).style.display = 'block';
-    }
+    // Mostrar los elementos especificados en elementsToShow
+    elementsToShow.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.style.display = 'block';
+        }
+    });
 }
 
 function cargarInforme() {
-    // Mostrar o ocultar los informes según se necesite
-    document.getElementById("informeMatutino").style.display = "block";
-    document.getElementById("informeVespertino").style.display = "block";
-    document.getElementById("informeCondensadoD").style.display = "none";
-    document.getElementById("valores").style.display = "none";
-    document.getElementById("depósito").style.display = "none";
+    // Asegurarse de ocultar todo antes de mostrar solo las tablas correspondientes a este informe
+    toggleDisplay(['informeMatutino', 'informeVespertino'], ['informeCondensadoD', 'valores', 'depósito']);
+    
+    // Mostrar los otros dos botones después de hacer clic en "Informe Turno Mañana-Tarde"
+    document.getElementById('generarTablas').style.display = 'inline-block';
+    document.getElementById('generarCompleto').style.display = 'inline-block';
 }
 
-// Función para cargar las tablas de informes
 function cargarTablas() {
-    document.getElementById("informeMatutino").style.display = "none";
-    document.getElementById("informeVespertino").style.display = "none";
-    document.getElementById("informeCondensadoD").style.display = "block";
-    document.getElementById("valores").style.display = "block";
-    document.getElementById("depósito").style.display = "block";
+    // Asegurarse de ocultar todo antes de mostrar solo las tablas correspondientes a este informe
+    toggleDisplay(['informeCondensadoD', 'valores', 'depósito'], ['informeMatutino', 'informeVespertino']);
 }
 
 function cargarCompleto() {
-    document.getElementById("informeMatutino").style.display = "block";
-    document.getElementById("informeVespertino").style.display = "block";
-    document.getElementById("informeCondensadoD").style.display = "block";
-    document.getElementById("valores").style.display = "block";
-    document.getElementById("depósito").style.display = "block";
+    // Asegurarse de mostrar todas las tablas cuando se hace clic en "Generar Informe Completo"
+    toggleDisplay(['informeMatutino', 'informeVespertino', 'informeCondensadoD', 'valores', 'depósito'], []);
 }
 
+// Inicializar las tablas al cargar la página
+document.addEventListener('DOMContentLoaded', inicializarTablas);
 
 document.addEventListener('DOMContentLoaded', () => {
     const obtenerFechaActual = () => {
@@ -73,14 +83,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 return response.json();
             })
             .then(data => {
+                const ticketsInput = document.getElementById('ticketsN');
+                
                 // Verifica si data tiene el campo RANGO_TICKET
                 if (data && data.RANGO_TICKET) {
-                    document.getElementById('ticketsN').value = data.RANGO_TICKET;
+                    // Si el rango es estrictamente 'a', se muestra 'No aplica'
+                    if (data.RANGO_TICKET.trim() === 'a') {
+                        ticketsInput.value = 'No aplica';
+                    } else {
+                        ticketsInput.value = data.RANGO_TICKET;
+                    }
                 } else {
-                    document.getElementById('ticketsN').value = 'No data';
+                    // Si no hay datos, se muestra 'No data'
+                    ticketsInput.value = 'No data';
                 }
-                console.log(data.RANGO_TICKET); // Depuración
+            
+                // Consola para depuración
+                console.log(data.RANGO_TICKET || 'Sin valor en RANGO_TICKET');
             })
+            
             .catch(error => console.error('Error al obtener tickets:', error));
             
             
@@ -90,14 +111,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 return response.json();
             })
             .then(data => {
+                const ticketsInput = document.getElementById('ticketsE');
+                
                 // Verifica si data tiene el campo RANGO_TICKET
                 if (data && data.RANGO_TICKET) {
-                    document.getElementById('ticketsE').value = data.RANGO_TICKET;
+                    // Si el rango es estrictamente 'a', se muestra 'No aplica'
+                    if (data.RANGO_TICKET.trim() === 'a') {
+                        ticketsInput.value = 'No aplica';
+                    } else {
+                        ticketsInput.value = data.RANGO_TICKET;
+                    }
                 } else {
-                    document.getElementById('ticketsE').value = 'No data';
+                    // Si no hay datos, se muestra 'No data'
+                    ticketsInput.value = 'No data';
                 }
-                console.log(data.RANGO_TICKET); // Depuración
-            })
+            
+                // Consola para depuración
+                console.log(data.RANGO_TICKET || 'Sin valor en RANGO_TICKET');
+            })      
             .catch(error => console.error('Error al obtener tickets:', error));
 
             fetch(`/api/total?startDate=${startDate}&endDate=${endDate}`)
@@ -110,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data && data.TOTAL_DIA) {
             document.getElementById('total').value = '$'+data.TOTAL_DIA;
         } else {
-            document.getElementById('total').value = 'No data';
+            document.getElementById('total').value = 'Valor no encontrado';
         }
         console.log("data",data); // Depuración
     })

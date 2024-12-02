@@ -10,11 +10,8 @@
     <script src="../models/getInfo.js"></script>
     <link rel="stylesheet" href="../public/css/styleHomeAdmin.css">
     <link rel="stylesheet" href="../public/css/reportes.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.5/purify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
 </head>
@@ -33,9 +30,10 @@
     <!-- Botones para generar los informes -->
     <div class="btn-group">
         <button id="generarInformeBtn" onclick="cargarInforme()">Informe Turno Mañana-Tarde</button>
-        <button id="generarTablas" onclick="cargarTablas()">Informe Condensado, Valores y Depósito</button>
-        <button id="generarCompleto" onclick="cargarCompleto()">Generar Informe Completo</button>
+        <button id="generarTablas" onclick="cargarTablas()" style="display: none;">Informe Condensado, Valores y Depósito</button>
+        <button id="generarCompleto" onclick="cargarCompleto()" style="display: none;">Generar Informe Completo</button>
     </div>
+     
     <div id="depósito" class="tabla-contenedor" style="display:none;">
         <form id="formDeposito">
             <div class="form-group">

@@ -223,6 +223,33 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
     // Finalmente agregar los valores
     agregar('valores');
     
+    const numLineas = 3; // Número de líneas de subrayado
+    const anchoLinea = 190; // Ancho de cada línea
+    currentY = doc.lastAutoTable.finalY + 10;
+    doc.text("Observaciones:", margin, currentY);
+    for (let i = 0; i < numLineas; i++) {
+        currentY += 10; // Espaciado entre líneas
+        doc.line(margin, currentY, margin + anchoLinea, currentY); // Línea horizontal
+    }
+
+    const responsable = await obtenerResponsables();
+    if (currentY + 50 > pageHeight - margin) {
+        doc.addPage(); // Nueva página si no hay espacio
+        agregarEncabezado(); // Repetir encabezado
+    }
+    currentY = pageHeight - 50; // Posición cercana al final de la página
+    doc.setFontSize(10);
+
+    responsable.forEach((NOMBRE, index) => {
+        doc.text(`Firma del Responsable: ${NOMBRE+'__________________________________' || '__________________________________'}`, margin, currentY);
+        currentY += 20; // Espacio entre firmas
+    });
+
+    const secretaria = await obtenerSecretaria();
+    secretaria.forEach((NOMBRE, index) => {
+        doc.text(`Firma de Secretaria: ${NOMBRE+'__________________________________' || '__________________________________'}`, margin, currentY);
+    });
+
     // Crear el PDF
-    doc.save('Reporte_Frecuencia.pdf');
+    doc.save('Informe_Diario.pdf');
 });

@@ -13,7 +13,7 @@ function actualizarRestriccionFechaFin() {
         
         // Calcular la fecha límite (8 días después de la fecha de inicio)
         const fechaLimite = new Date(fechaInicio);
-        fechaLimite.setDate(fechaInicio.getDate() + 10); // 8 días después
+        fechaLimite.setDate(fechaInicio.getDate() + 7); // 8 días después
 
         // Establecer el mínimo de fechaFin como la fecha de inicio
         fechaFinInput.min = fechaInicio.toISOString().split('T')[0];  // Establecer el mínimo de fechaFin
