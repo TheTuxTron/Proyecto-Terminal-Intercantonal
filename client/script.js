@@ -21,15 +21,20 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
             const decodedToken = jwt_decode(data.token);
             const rol = decodedToken.rol;
             const username = decodedToken.nombre;
+            const estado = decodedToken.estado;
             localStorage.setItem("nombre", username);
-  
-            // Redirigir según el rol
-            if (rol === "administrador" || rol === "secretaria" || rol === "superadmin") {
-                window.location.href = '../views/homeAdmin.html';
-            } else if (rol === "usuario") {
-                window.location.href = '../views/homeUser.html';
-            } else {
-                alert("Rol no reconocido.");
+            
+            if(estado === "activo"){
+                // Redirigir según el rol
+                if (rol === "administrador" || rol === "secretaria" || rol === "superadmin") {
+                    window.location.href = '../views/homeAdmin.html';
+                } else if (rol === "usuario") {
+                    window.location.href = '../views/homeUser.html';
+                } else {
+                    alert("Rol no reconocido.");
+                }
+            }else{
+                alert("El usuarios se encuentra inactivo. Por favor hable con un administrador.");
             }
         } else {
             alert("Credenciales incorrectas");

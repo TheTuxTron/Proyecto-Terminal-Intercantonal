@@ -18,10 +18,10 @@ app.post('/api/login', (req, res) => {
             return res.status(500).json({ error: 'Error en el servidor' });
         }
         if (row) {
-            console.log(row); 
+            //console.log(row); 
             // Generar token JWT con la información relevante
             const token = jwt.sign(
-                { cedula: row.CEDULA, nombre: row.NOMBRE, rol: row.ROL },
+                { cedula: row.CEDULA, nombre: row.NOMBRE, rol: row.ROL, estado: row.ESTADO },
                 SECRET_KEY,
                 { expiresIn: '24h' }
             );
