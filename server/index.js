@@ -1142,19 +1142,18 @@ app.get('/api/get-num-ticket/:tabla', (req, res) => {
     if (tabla !== 'REGISTRO' && tabla !== 'REGISTRO_EXTRA') {
         return res.status(400).json({ error: 'Tabla no válida' });
     }
-
+    // Año actual
+    const currentYear = new Date().getFullYear();
     // Consulta SQL
-    const query = `SELECT MAX(NUM_TICKET)+1 AS MINIMO_NUM_TICKET FROM ${tabla}`;
+    const query = `SELECT MAX(CAST(NUM_TICKET AS INTEGER)) + 1 AS NumeroMayorTicket FROM ${tabla} WHERE strftime('%Y', FECHA) = "${currentYear}"`;
 
     db.all(query, [], (err, rows) => {
         if (err) {
             console.error('Error al obtener el mayor NUM_TICKET:', err.message);
             return res.status(500).json({ error: 'Error al obtener datos' });
         }
-
         // Verifica que haya filas en el resultado
         const result = rows[0];
-        //console.log(`Resultado para la tabla ${tabla}:`, result);
         res.json(result || { MINIMO_NUM_TICKET: null });
     });
 });

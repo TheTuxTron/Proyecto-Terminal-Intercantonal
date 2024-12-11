@@ -1,6 +1,14 @@
 // Configuración de fecha
 const hoy = new Date();
-const fechaActual = hoy.toISOString().split('T')[0];
+
+// Extraer año, mes y día en la zona horaria local
+const anio = hoy.getFullYear();
+const mes = String(hoy.getMonth() + 1).padStart(2, '0'); // Los meses empiezan en 0
+const dia = String(hoy.getDate()).padStart(2, '0'); // Día local
+
+const fechaActual = `${anio}-${mes}-${dia}`;
+
+// Establecer el valor en el elemento con id "fecha"
 document.getElementById('fecha').value = fechaActual;
 
 async function cargarOpciones() {
@@ -75,13 +83,11 @@ async function cargarNumTicketInicial() {
         if (!response.ok) throw new Error("Error al cargar NUM_TICKET");
 
         const data = await response.json();
-        //console.log(`El menor NUM_TICKET en la tabla REGISTRO es:`, data.MINIMO_NUM_TICKET);
-
         // Actualiza el valor del input con ID 'numTicket'
         const numTicketElement = document.getElementById('numTicket');
         if (numTicketElement) {
             // Usa el valor para campos de tipo input
-            numTicketElement.value = data.MINIMO_NUM_TICKET ?? 'N/A';
+            numTicketElement.value = data.NumeroMayorTicket ?? '1';
         }
     } catch (error) {
         console.error("Error al cargar el menor NUM_TICKET de la tabla REGISTRO:", error);

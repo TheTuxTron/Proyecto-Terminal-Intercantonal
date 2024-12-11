@@ -67,6 +67,7 @@ document.getElementById('registroForm').addEventListener('submit', async functio
             const hoy = new Date();
             const fechaActual = hoy.toISOString().split('T')[0];
             document.getElementById('fecha').value = fechaActual;
+            location.reload();
         } else {
             alert("Error en el registro, frecuencia ya registrada.");
         }
@@ -191,7 +192,7 @@ document.getElementById('tipoFrecuencia').addEventListener('change', async funct
             const numTicketElement = document.getElementById('numTicket');
             if (numTicketElement) {
                 // Usa el valor devuelto por la API o muestra 'N/A' si no hay valor
-                numTicketElement.value = data.MINIMO_NUM_TICKET ?? 'N/A';
+                numTicketElement.value = data.NumeroMayorTicket ?? '1';
             }
         } catch (error) {
             console.error("Error al cargar NUM_TICKET de REGISTRO_EXTRA:", error);
@@ -199,51 +200,5 @@ document.getElementById('tipoFrecuencia').addEventListener('change', async funct
         }
     } else if (tipoFrecuencia === 'NORMAL') {
         location.reload();
-        /*
-        // Crear un campo select con opciones de hora y cargar opciones de la base de datos
-        const horaSelect = document.createElement('select');
-        horaSelect.id = 'hora';
-        horaSelect.name = 'hora';
-        horaSelect.required = true;
-        horaSelect.innerHTML = '<option value="" disabled selected>--------------</option>';
-        horaContainer.appendChild(horaSelect);
-        
-        location.reload();      
-        try {
-            // Llamar a la API para obtener las horas
-            const response = await fetch('/api/get-horas');
-            if (!response.ok) {
-                throw new Error('Error al cargar horas desde la API.');
-            }
-            const data = await response.json();
-
-            // Agregar las opciones de horas al select
-            data.forEach(row => {
-                const option = document.createElement('option');
-                option.value = row.HORA;
-                option.textContent = row.HORA;
-                horaSelect.appendChild(option);
-            });
-        } catch (error) {
-            console.error("Error al cargar horas:", error);
-            alert("Error al cargar las horas. Intenta nuevamente.");
-        }
-        try {
-            // Llamar a la API con la tabla 'REGISTRO_EXTRA'
-            const response = await fetch('/api/get-num-ticket/REGISTRO');
-            if (!response.ok) throw new Error("Error al cargar NUM_TICKET para REGISTRO");
-    
-            const data = await response.json();
-            
-            // Actualiza el valor del input con ID 'numTicket'
-            const numTicketElement = document.getElementById('numTicket');
-            if (numTicketElement) {
-                // Usa el valor devuelto por la API o muestra 'N/A' si no hay valor
-                numTicketElement.value = data.MINIMO_NUM_TICKET ?? 'N/A';
-            }
-        } catch (error) {
-            console.error("Error al cargar NUM_TICKET de REGISTRO:", error);
-            alert("Error al cargar el NUM_TICKET de REGISTRO. Intenta nuevamente.");
-        }*/
     }
 });
