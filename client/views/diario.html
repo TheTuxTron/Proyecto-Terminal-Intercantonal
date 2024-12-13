@@ -21,7 +21,7 @@
         <h1>Reporte Diario</h1>
         
         <div class="controls">
-            <label for="fechaInicio">Seleccione el rango de fechas:</label>
+            <label for="fechaInicio">Seleccione el rango de fechas del que se generará el reporte:</label>
             <input type="date" id="fechaInicio" required>
             <input type="date" id="fechaFin" required>
         </div>
@@ -42,11 +42,6 @@
             </div>
             <br>
             <div class="form-group">
-                <label for="numeroDeposito">Número de Depósito:</label>
-                <input type="text" id="numeroDeposito" name="numeroDeposito" required>
-            </div>
-            <br>
-            <div class="form-group">
                 <label for="total">Valor de depósito:</label>
                 <input type="input" id="total" name="total" disabled></input>
             </div>
@@ -62,8 +57,18 @@
             </div>
             <br>
             <div class="form-group">
-                <label for="ticketsE">Tickets Extra vendidos:</label>
-                <input type="input" id="ticketsE" name="ticketsE" disabled></input>
+                <label for="ticketsE">Total Tickets Normales vendidos:</label>
+                <input type="input" id="ticketsTN" name="ticketsE" disabled></input>
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="ticketsN">Tickets Extra vendidos:</label>
+                <input type="input" id="ticketsE" name="ticketsN" disabled></textarea>
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="ticketsE">Total tickets Extra vendidos:</label>
+                <input type="input" id="ticketsTE" name="ticketsE" disabled></input>
             </div>
             <br>
             <div class="form-group">

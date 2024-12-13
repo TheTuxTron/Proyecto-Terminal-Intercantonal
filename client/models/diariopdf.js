@@ -27,7 +27,6 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
         const formDeposito = document.getElementById('depósito');
         if (formDeposito.style.display === "block") {  // Verifica si el formulario está visible
             const fechaDeposito = document.getElementById('fechaDeposito').value;
-            const numeroDeposito = document.getElementById('numeroDeposito').value;
             const numeroGuia = document.getElementById('numeroGuia').value;
             const total = document.getElementById('total').value;  // Asegúrate de que 'totalInput' sea el ID correcto
             const ticketsN = document.getElementById('ticketsN').value;
@@ -41,8 +40,6 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
             
             doc.setFontSize(10);
             doc.text(`Fecha de Depósito: ${fechaDeposito || 'Sin datos'}`, margin, currentY);
-            currentY += 6;
-            doc.text(`Número de Depósito: ${numeroDeposito || 'Sin datos'}`, margin, currentY);
             currentY += 6;
             doc.text(`Número de Guía: ${numeroGuia || 'Sin datos'}`, margin, currentY);
             currentY += 6;

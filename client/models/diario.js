@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', inicializarTablas);
 document.addEventListener('DOMContentLoaded', () => {
     const obtenerFechaActual = () => {
         const hoy = new Date();
-        const dia = String(hoy.getDate()).padStart(2, '0');
+        const dia = String(hoy.getDate()-1).padStart(2, '0');
         const mes = String(hoy.getMonth() + 1).padStart(2, '0');
         const anio = hoy.getFullYear();
         return `${anio}-${mes}-${dia}`;
@@ -131,6 +131,38 @@ document.addEventListener('DOMContentLoaded', () => {
             })      
             .catch(error => console.error('Error al obtener tickets:', error));
 
+            fetch(`/api/ticketsTN?startDate=${startDate}&endDate=${endDate}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Error al obtener los datos');
+                return response.json();
+            })
+            .then(data => {
+                const ticketsInput = document.getElementById('ticketsTN');
+                
+                // Mostrar el rango de tickets o mensaje predeterminado
+                ticketsInput.value = data.TOTAL_BOLETOS_VENDIDOS || 'Ningún ticket normal vendido';
+                
+                // Consola para depuración
+                console.log('Total de Boletos Vendidos:', data.TOTAL_BOLETOS_VENDIDOS || 0);
+            })
+            .catch(error => console.error('Error al obtener tickets:', error));
+            
+            fetch(`/api/ticketsTE?startDate=${startDate}&endDate=${endDate}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Error al obtener los datos');
+                return response.json();
+            })
+            .then(data => {
+                const ticketsInput = document.getElementById('ticketsTE');
+                
+                // Mostrar el rango de tickets o mensaje predeterminado
+                ticketsInput.value = data.TOTAL_BOLETOS_VENDIDOS || 'No aplica';
+                
+                // Consola para depuración
+                console.log('Total de Boletos Vendidos:', data.TOTAL_BOLETOS_VENDIDOS || 0);
+            })
+            .catch(error => console.error('Error al obtener tickets:', error));
+        
             fetch(`/api/total?startDate=${startDate}&endDate=${endDate}`)
     .then(response => {
         if (!response.ok) throw new Error('Error al obtener los datos');

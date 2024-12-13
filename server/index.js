@@ -95,11 +95,10 @@ app.get('/api/get-horas', (req, res) => {
     const query = `
         SELECT DISTINCT HORA
         FROM FRECUENCIAS
-        WHERE JORNADA = ?
         ORDER BY HORA
     `;
     try {
-        db.all(query, [/*cooperativa, destino,*/jornada], (err, rows) => {
+        db.all(query, [/*cooperativa, destino,*/], (err, rows) => {
             if (err) {
                 console.error("Error al obtener horas:", err);
                 return res.status(500).json({ error: 'Error al obtener horas' });
@@ -758,19 +757,19 @@ app.get('/api/ticketsN', (req, res) => {
 
     const query = `
         SELECT CONCAT(
-            (SELECT NUM_TICKET
-             FROM REGISTRO
-             WHERE FECHA BETWEEN ? AND ?
-             ORDER BY NUM_TICKET ASC
-             LIMIT 1),
-            ' a ',
-            (SELECT NUM_TICKET
-             FROM REGISTRO
-             WHERE FECHA BETWEEN ? AND ?
-             ORDER BY NUM_TICKET DESC
-             LIMIT 1)
-        ) AS RANGO_TICKET;
-    `;
+         (SELECT CAST(NUM_TICKET AS UNSIGNED)
+          FROM REGISTRO
+          WHERE FECHA BETWEEN ? AND ?
+          ORDER BY CAST(NUM_TICKET AS UNSIGNED) ASC
+          LIMIT 1),
+         ' a ',
+         (SELECT CAST(NUM_TICKET AS UNSIGNED)
+          FROM REGISTRO
+          WHERE FECHA BETWEEN ? AND ?
+          ORDER BY CAST(NUM_TICKET AS UNSIGNED) DESC
+          LIMIT 1)
+     ) AS RANGO_TICKET;
+      `;
 
     db.get(query, [startDate, endDate, startDate, endDate], (err, row) => { // Cambiado de db.all a db.get
         if (err) {
@@ -779,6 +778,29 @@ app.get('/api/ticketsN', (req, res) => {
         }
 
         res.json(row || { RANGO_TICKET: 'No hay datos en el rango proporcionado' });
+    });
+});
+
+app.get('/api/ticketsTN', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = `
+        SELECT COUNT(*) AS TOTAL_BOLETOS_VENDIDOS
+        FROM REGISTRO
+        WHERE FECHA BETWEEN ? AND ?;
+    `;
+
+    db.get(query, [startDate, endDate], (err, row) => {
+        if (err) {
+            console.error("Error al obtener los valores:", err);
+            return res.status(500).json({ error: 'Error al obtener los valores' });
+        }
+
+        res.json(row || { TOTAL_BOLETOS_VENDIDOS: 0 });
     });
 });
 
@@ -791,18 +813,18 @@ app.get('/api/ticketsE', (req, res) => {
 
     const query = `
         SELECT CONCAT(
-            (SELECT NUM_TICKET
-             FROM REGISTRO_EXTRA
-             WHERE FECHA BETWEEN ? AND ?
-             ORDER BY NUM_TICKET ASC
-             LIMIT 1),
-            ' a ',
-            (SELECT NUM_TICKET
-             FROM REGISTRO_EXTRA
-             WHERE FECHA BETWEEN ? AND ?
-             ORDER BY NUM_TICKET DESC
-             LIMIT 1)
-        ) AS RANGO_TICKET;
+         (SELECT CAST(NUM_TICKET AS UNSIGNED)
+          FROM REGISTRO_EXTRA
+          WHERE FECHA BETWEEN ? AND ?
+          ORDER BY CAST(NUM_TICKET AS UNSIGNED) ASC
+          LIMIT 1),
+         ' a ',
+         (SELECT CAST(NUM_TICKET AS UNSIGNED)
+          FROM REGISTRO_EXTRA
+          WHERE FECHA BETWEEN ? AND ?
+          ORDER BY CAST(NUM_TICKET AS UNSIGNED) DESC
+          LIMIT 1)
+     ) AS RANGO_TICKET;
     `;
 
     db.get(query, [startDate, endDate, startDate, endDate], (err, row) => { // Cambiado de db.all a db.get
@@ -812,6 +834,29 @@ app.get('/api/ticketsE', (req, res) => {
         }
 
         res.json(row || { RANGO_TICKET: 'No hay datos en el rango proporcionado' });
+    });
+});
+
+app.get('/api/ticketsTE', (req, res) => {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+        return res.status(400).json({ error: 'Debe proporcionar las fechas de inicio y fin' });
+    }
+
+    const query = `
+        SELECT COUNT(*) AS TOTAL_BOLETOS_VENDIDOS
+    FROM REGISTRO_EXTRA
+    WHERE FECHA BETWEEN ? AND ?;
+    `;
+
+    db.get(query, [startDate, endDate], (err, row) => {
+        if (err) {
+            console.error("Error al obtener los valores:", err);
+            return res.status(500).json({ error: 'Error al obtener los valores' });
+        }
+
+        res.json(row || { TOTAL_BOLETOS_VENDIDOS: 0 });
     });
 });
 

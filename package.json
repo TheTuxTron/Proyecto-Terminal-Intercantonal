@@ -1,21 +1,17 @@
 {
   "name": "proyecto-terminal-intercantonal",
   "version": "1.0.0",
+  "description": "Proyecto Terminal Intercantonal",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cors": "^2.8.5",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "jspdf": "^2.5.2",
-    "pdf-lib": "^1.17.1",
     "sqlite3": "^5.1.7"
-  },
-  "description": ""
+  }
 }
