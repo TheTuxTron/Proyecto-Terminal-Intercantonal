@@ -30,7 +30,9 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
             const numeroGuia = document.getElementById('numeroGuia').value;
             const total = document.getElementById('total').value;  // Asegúrate de que 'totalInput' sea el ID correcto
             const ticketsN = document.getElementById('ticketsN').value;
+            const ticketsTN = document.getElementById('ticketsTN').value;
             const ticketsE = document.getElementById('ticketsE').value;
+            const ticketsTE = document.getElementById('ticketsTE').value;
             const observaciones = document.getElementById('observaciones').value;
 
             doc.setFontSize(12);
@@ -47,9 +49,13 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
             currentY += 6;
             doc.text(`Tickets Normales vendidos: ${ticketsN || 'Sin datos'}`, margin, currentY);
             currentY += 6;
+            doc.text(`Total tickets Normales vendidos: ${ticketsTN || 'Sin datos'}`, margin, currentY);
+            currentY += 6;
             doc.text(`Tickets Extra vendidos: ${ticketsE || 'Sin datos'}`, margin, currentY);
             currentY += 6;
-            doc.text(`Observaciones: ${observaciones || ''}`, margin, currentY);
+            doc.text(`Total tickets Normales vendidos: ${ticketsTE || 'Sin datos'}`, margin, currentY);
+            currentY += 6;
+            doc.text(`Observaciones: ${observaciones || 'No hay novedades'}`, margin, currentY);
             currentY += 10; // Espacio después del formulario
         }
     };
@@ -219,26 +225,17 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
 
     // Finalmente agregar los valores
     agregar('valores');
-    
-    const numLineas = 3; // Número de líneas de subrayado
-    const anchoLinea = 190; // Ancho de cada línea
-    currentY = doc.lastAutoTable.finalY + 10;
-    doc.text("Observaciones:", margin, currentY);
-    for (let i = 0; i < numLineas; i++) {
-        currentY += 10; // Espaciado entre líneas
-        doc.line(margin, currentY, margin + anchoLinea, currentY); // Línea horizontal
-    }
 
     const responsable = await obtenerResponsables();
     if (currentY + 50 > pageHeight - margin) {
         doc.addPage(); // Nueva página si no hay espacio
         agregarEncabezado(); // Repetir encabezado
     }
-    currentY = pageHeight - 50; // Posición cercana al final de la página
+    currentY = pageHeight - 40; // Posición cercana al final de la página
     doc.setFontSize(10);
 
     responsable.forEach((NOMBRE, index) => {
-        doc.text(`Firma del Responsable: ${NOMBRE+'__________________________________' || '__________________________________'}`, margin, currentY);
+        doc.text(`Firma de Administrador: ${NOMBRE+'__________________________________' || '__________________________________'}`, margin, currentY);
         currentY += 20; // Espacio entre firmas
     });
 

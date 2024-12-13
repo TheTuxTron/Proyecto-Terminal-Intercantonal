@@ -4,12 +4,36 @@
         <ul>
             <li id="licon"><img height="40px" width="40px" margin="0" src="/images/logo.ico" alt="" srcset=""></li>
             <li>
-                <a href="#Informe" onclick="generarInformeDiario()" id="informe">
+                <!-- Enlace para abrir la ventana modal -->
+                    <a href="#Informe" onclick="mostrarModal()" id="informe">Generar Informe Diario
                     <img src="../images/pddf.ico" alt="Icono de Informe" style="width:16px; height:16px; vertical-align:middle; margin-right:5px;">
-                    Informe Diario
                 </a>
             </li>            
             <li><a href="../index.html" onclick="logout()">Cerrar Sesión</a></li>
         </ul>
     </nav>
+    
+<!-- Modal para seleccionar la fecha y la jornada -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="cerrarModal()">&times;</span>
+      <h2>Selecciona la Fecha y la Jornada</h2>
+  
+      <!-- Selector de Fecha -->
+      <label for="fecha">Fecha:</label>
+      <input type="date" id="fecha" name="fecha" value="" />
+  
+      <!-- Selector de Jornada -->
+      <label for="jornada">Jornada:</label>
+      <select id="jornada" name="jornada">
+        <option value="MAÑANA (05H00-13H00)">Mañana</option>
+        <option value="TARDE (13H00-21H00)">Tarde</option>
+      </select>
+  
+      <br><br>
+      <button onclick="generarInformeDiario()">Generar Informe</button>
+    </div>
+  </div>
 </header>
+
+

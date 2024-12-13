@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ticketsInput = document.getElementById('ticketsTN');
                 
                 // Mostrar el rango de tickets o mensaje predeterminado
-                ticketsInput.value = data.TOTAL_BOLETOS_VENDIDOS || 'Ningún ticket normal vendido';
+                ticketsInput.value = data.TOTAL_BOLETOS_VENDIDOS || 'No aplica';
                 
                 // Consola para depuración
                 console.log('Total de Boletos Vendidos:', data.TOTAL_BOLETOS_VENDIDOS || 0);

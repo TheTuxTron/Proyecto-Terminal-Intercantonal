@@ -309,119 +309,65 @@ app.get('/api/valores', (req, res) => {
         res.json(rows); // Devuelve los datos obtenidos con total de mañana y tarde por fecha
     });
 });
-// Ruta para obtener el informe del usuario logueado
-app.get('/api/informe', (req, res) => {
-    const userId = req.query.userId; // Obtener el userId desde los query params
 
-    if (!userId) {
-        return res.status(400).json({ error: 'User ID is required' });
+app.get('/api/informe', (req, res) => {
+    const userId = req.query.userId;
+    const fecha = req.query.fecha;
+
+    if (!userId || !fecha) {
+        return res.status(400).json({ error: 'User ID y fecha son requeridos' });
     }
 
     const query = `
-    WITH Totales AS (
+    WITH Totales AS ( 
+        SELECT 
+            USUARIO,
+            COUNT(*) AS TOTAL_TICKETS_REGISTRO,
+            MAX(CAST(NUM_TICKET AS UNSIGNED)) AS MAX_TICKET_REGISTRO,
+            MIN(CAST(NUM_TICKET AS UNSIGNED)) AS MIN_TICKET_REGISTRO,
+            SUM(VALOR) AS TOTAL_RECAUDADO_REGISTRO
+        FROM REGISTRO
+        WHERE FECHA = ?
+        GROUP BY USUARIO
+    ),
+    Totales_Extra AS (
+        SELECT 
+            USUARIO,
+            COUNT(*) AS TOTAL_TICKETS_REGISTRO_EXTRA,
+            MAX(CAST(NUM_TICKET AS UNSIGNED)) AS MAX_TICKET_REGISTRO_EXTRA,
+            MIN(CAST(NUM_TICKET AS UNSIGNED)) AS MIN_TICKET_REGISTRO_EXTRA,
+            SUM(VALOR) AS TOTAL_RECAUDADO_REGISTRO_EXTRA
+        FROM REGISTRO_EXTRA
+        WHERE FECHA = ?
+        GROUP BY USUARIO
+    )
     SELECT 
-        SUM(VALOR) AS subtotal_REGISTRO 
-    FROM REGISTRO 
-    WHERE USUARIO = ? AND FECHA = date('now')
-),
-Totales_Extra AS (
-    SELECT 
-        SUM(VALOR) AS subtotal_REGISTRO_EXTRA 
-    FROM REGISTRO_EXTRA 
-    WHERE USUARIO = ? AND FECHA = date('now')
-)
-
--- Consulta para REGISTRO con subtotal
-SELECT 
-    'REGISTRO' AS fuente,
-    COOPERATIVA,
-    USUARIO,
-    DESTINO,
-    HORA,
-    FECHA,
-    FRECUENCIA,
-    NUM_PASAJEROS,
-    TIPO_FREC,
-    '$' || printf("%.2f", VALOR) AS VALOR,  -- Concatenar el signo de dólar
-    NUM_TICKET
-FROM REGISTRO
-WHERE USUARIO = ? AND FECHA = date('now')
-
-UNION ALL
-
--- Subtotal para REGISTRO
-SELECT 
-    'SUBTOTAL REGISTRO' AS fuente,
-    NULL AS COOPERATIVA,
-    NULL AS USUARIO,
-    NULL AS DESTINO,
-    NULL AS HORA,
-    NULL AS FECHA,
-    NULL AS FRECUENCIA,
-    NULL AS NUM_PASAJEROS,
-    NULL AS TIPO_FREC,
-    '$' || printf("%.2f", (SELECT subtotal_REGISTRO FROM Totales)) AS VALOR,  -- Concatenar el signo de dólar al subtotal
-    NULL AS NUM_TICKET
-
-UNION ALL
-
--- Consulta para REGISTRO_EXTRA con subtotal
-SELECT 
-    'REGISTRO_EXTRA' AS fuente,
-    COOPERATIVA,
-    USUARIO,
-    DESTINO,
-    HORA,
-    FECHA,
-    FRECUENCIA,
-    NUM_PASAJEROS,
-    TIPO_FREC,
-    '$' || printf("%.2f", VALOR) AS VALOR,  -- Concatenar el signo de dólar
-    NUM_TICKET
-FROM REGISTRO_EXTRA
-WHERE USUARIO = ? AND FECHA = date('now')
-
-UNION ALL
-
--- Subtotal para REGISTRO_EXTRA
-SELECT 
-    'SUBTOTAL REGISTRO_EXTRA' AS fuente,
-    NULL AS COOPERATIVA,
-    NULL AS USUARIO,
-    NULL AS DESTINO,
-    NULL AS HORA,
-    NULL AS FECHA,
-    NULL AS FRECUENCIA,
-    NULL AS NUM_PASAJEROS,
-    NULL AS TIPO_FREC,
-    '$' || printf("%.2f", (SELECT subtotal_REGISTRO_EXTRA FROM Totales_Extra)) AS VALOR,  -- Concatenar el signo de dólar al subtotal
-    NULL AS NUM_TICKET
-
-UNION ALL
-
--- Fila de total general
-SELECT 
-    'TOTAL' AS fuente,
-    NULL AS COOPERATIVA,
-    NULL AS USUARIO,
-    NULL AS DESTINO,
-    NULL AS HORA,
-    NULL AS FECHA,
-    NULL AS FRECUENCIA,
-    NULL AS NUM_PASAJEROS,
-    NULL AS TIPO_FREC,
-    '$' || printf("%.2f", (SELECT subtotal_REGISTRO FROM Totales) + (SELECT subtotal_REGISTRO_EXTRA FROM Totales_Extra)) AS VALOR,  -- Concatenar el signo de dólar al total
-    NULL AS NUM_TICKET;
-
+        U.NOMBRE,
+        COALESCE(T.TOTAL_TICKETS_REGISTRO, 0) AS TOTAL_BOLETOS_REGISTRO,
+        COALESCE(TE.TOTAL_TICKETS_REGISTRO_EXTRA, 0) AS TOTAL_BOLETOS_REGISTRO_EXTRA,
+        COALESCE(T.TOTAL_TICKETS_REGISTRO, 0) + COALESCE(TE.TOTAL_TICKETS_REGISTRO_EXTRA, 0) AS TOTAL_BOLETOS_VENDIDOS,
+        COALESCE(T.MIN_TICKET_REGISTRO, 0) AS RANGO_TICKET_REGISTRO_MIN,
+        COALESCE(T.MAX_TICKET_REGISTRO, 0) AS RANGO_TICKET_REGISTRO_MAX,
+        COALESCE(TE.MIN_TICKET_REGISTRO_EXTRA, 0) AS RANGO_TICKET_REGISTRO_EXTRA_MIN,
+        COALESCE(TE.MAX_TICKET_REGISTRO_EXTRA, 0) AS RANGO_TICKET_REGISTRO_EXTRA_MAX,
+        COALESCE(T.TOTAL_RECAUDADO_REGISTRO, 0) + COALESCE(TE.TOTAL_RECAUDADO_REGISTRO_EXTRA, 0) AS TOTAL_RECAUDADO,
+        (COALESCE(T.TOTAL_TICKETS_REGISTRO, 0) * 0.5) AS TOTAL_R_REGISTRO, 
+    (COALESCE(TE.TOTAL_TICKETS_REGISTRO_EXTRA, 0) * 1) AS TOTAL_R_REGISTRO_EXTRA
+    FROM USUARIOS U
+    LEFT JOIN Totales T ON U.NOMBRE = T.USUARIO
+    LEFT JOIN Totales_Extra TE ON U.NOMBRE = TE.USUARIO
+    WHERE U.NOMBRE = ?;
     `;
 
-    db.all(query, [userId, userId, userId, userId], (err, rows) => {
+    db.all(query, [fecha, fecha, userId], (err, rows) => {
         if (err) {
+            console.error('Error al ejecutar la consulta:', err);
             return res.status(500).json({ error: 'Error al ejecutar la consulta' });
         }
         res.json(rows);
     });
 });
+
 
 // Definir la ruta para obtener los usuarios
 app.get('/api/usuarios', (req, res) => {

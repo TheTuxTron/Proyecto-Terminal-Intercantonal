@@ -140,7 +140,7 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
     doc.setFontSize(10);
 
     responsable.forEach((NOMBRE, index) => {
-        doc.text(`Firma del Responsable: ${NOMBRE+'__________________________________' || '__________________________________'}`, margin, currentY);
+        doc.text(`Firma de Administrador: ${NOMBRE+'__________________________________' || '__________________________________'}`, margin, currentY);
         currentY += 20; // Espacio entre firmas
     });
 
