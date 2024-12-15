@@ -836,78 +836,92 @@ app.get('/api/total', (req, res) => {
 }); // Cierre de app.get
 
 app.get('/api/mensual-disco', (req, res) => {
-    const { mes } = req.query;
+    const { mes, cooperativa } = req.query;
 
-    if (!mes) {
+    // Validar que se proporcione el mes
+    if (!mes || !/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) {
         return res.status(400).json({ error: 'Debe proporcionar el mes en formato YYYY-MM' });
     }
 
-    const query = `
-       WITH REGISTROS_COMBINADOS AS (
-        SELECT 
-            FECHA,
-            CASE 
-                WHEN CAST(SUBSTR(HORA, 1, 2) AS INTEGER) < 13 
-                    OR (CAST(SUBSTR(HORA, 1, 2) AS INTEGER) = 13 AND CAST(SUBSTR(HORA, 4, 2) AS INTEGER) = 0) THEN 'MAÑANA'
-                ELSE 'TARDE'
-            END AS TURNO,
-            TIPO_FREC,
-            COUNT(*) AS FRECUENCIAS
-        FROM REGISTRO
-        WHERE TIPO_FREC IN ('NORMAL', 'EXTRA') 
-        AND strftime('%Y-%m', FECHA) = ?
-        GROUP BY FECHA, TURNO, TIPO_FREC
-
-        UNION ALL
-
-        SELECT 
-            FECHA,
-            CASE 
-                WHEN CAST(SUBSTR(HORA, 1, 2) AS INTEGER) < 13 
-                    OR (CAST(SUBSTR(HORA, 1, 2) AS INTEGER) = 13 AND CAST(SUBSTR(HORA, 4, 2) AS INTEGER) = 0) THEN 'MAÑANA'
-                ELSE 'TARDE'
-            END AS TURNO,
-            TIPO_FREC,
-            COUNT(*) AS FRECUENCIAS
-        FROM REGISTRO_EXTRA
-        WHERE TIPO_FREC IN ('NORMAL', 'EXTRA') 
-        AND strftime('%Y-%m', FECHA) = ?
-        GROUP BY FECHA, TURNO, TIPO_FREC
-    )
+    // Construcción de la consulta base
+    let query = `
+    WITH REGISTROS_COMBINADOS AS (
     SELECT 
         FECHA,
-        COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA NORMAL",
-        COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA EXTRA",
-        COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO TARDE NORMAL",
-        COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO TARDE EXTRA",
-        COALESCE(SUM(FRECUENCIAS), 0) AS "TOTAL DIARIO FRECUENCIAS"
-    FROM REGISTROS_COMBINADOS
-    WHERE TURNO IN ('MAÑANA', 'TARDE')
-    GROUP BY FECHA
+        CASE 
+            WHEN CAST(SUBSTR(HORA, 1, 2) AS INTEGER) < 13 
+                OR (CAST(SUBSTR(HORA, 1, 2) AS INTEGER) = 13 AND CAST(SUBSTR(HORA, 4, 2) AS INTEGER) = 0) THEN 'MAÑANA'
+            ELSE 'TARDE'
+        END AS TURNO,
+        TIPO_FREC,
+        COUNT(*) AS FRECUENCIAS,
+        COOPERATIVA
+    FROM REGISTRO
+    WHERE TIPO_FREC IN ('NORMAL', 'EXTRA') 
+    AND strftime('%Y-%m', DATE(FECHA)) = ?
+    ${cooperativa ? 'AND COOPERATIVA = ?' : ''}
+    GROUP BY FECHA, TURNO, TIPO_FREC, COOPERATIVA
 
     UNION ALL
 
-    SELECT
-        'TOTAL' AS FECHA,
-        COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA NORMAL",
-        COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA EXTRA",
-        COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO TARDE NORMAL",
-        COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO TARDE EXTRA",
-        COALESCE(SUM(FRECUENCIAS), 0) AS "TOTAL DIARIO FRECUENCIAS"
-    FROM REGISTROS_COMBINADOS
+    SELECT 
+        FECHA,
+        CASE 
+            WHEN CAST(SUBSTR(HORA, 1, 2) AS INTEGER) < 13 
+                OR (CAST(SUBSTR(HORA, 1, 2) AS INTEGER) = 13 AND CAST(SUBSTR(HORA, 4, 2) AS INTEGER) = 0) THEN 'MAÑANA'
+            ELSE 'TARDE'
+        END AS TURNO,
+        TIPO_FREC,
+        COUNT(*) AS FRECUENCIAS,
+        COOPERATIVA
+    FROM REGISTRO_EXTRA
+    WHERE TIPO_FREC IN ('NORMAL', 'EXTRA') 
+    AND strftime('%Y-%m', DATE(FECHA)) = ?
+    ${cooperativa ? 'AND COOPERATIVA = ?' : ''}
+    GROUP BY FECHA, TURNO, TIPO_FREC, COOPERATIVA
+)
+SELECT 
+    FECHA,
+    COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA NORMAL",
+    COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA EXTRA",
+    COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO TARDE NORMAL",
+    COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO TARDE EXTRA",
+    COALESCE(SUM(FRECUENCIAS), 0) AS "TOTAL DIARIO FRECUENCIAS",
+    0 AS TOTAL_FLAG
+FROM REGISTROS_COMBINADOS
+WHERE TURNO IN ('MAÑANA', 'TARDE')
+GROUP BY FECHA
 
-    ORDER BY FECHA;
+UNION ALL
+
+SELECT
+    'TOTAL' AS FECHA,
+    COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA NORMAL",
+    COALESCE(SUM(CASE WHEN TURNO = 'MAÑANA' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO MAÑANA EXTRA",
+    COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'NORMAL' THEN FRECUENCIAS END), 0) AS "TURNO TARDE NORMAL",
+    COALESCE(SUM(CASE WHEN TURNO = 'TARDE' AND TIPO_FREC = 'EXTRA' THEN FRECUENCIAS END), 0) AS "TURNO TARDE EXTRA",
+    COALESCE(SUM(FRECUENCIAS), 0) AS "TOTAL DIARIO FRECUENCIAS",
+    1 AS TOTAL_FLAG
+FROM REGISTROS_COMBINADOS
+ORDER BY TOTAL_FLAG, FECHA;
+
     `;
 
-    db.all(query, [mes, mes], (err, rows) => {
+    // Parámetros dinámicos
+    const params = cooperativa ? [mes, cooperativa, mes,  cooperativa] : [mes, mes];
+
+    // Ejecutar la consulta
+    db.all(query, params, (err, rows) => {
         if (err) {
             console.error('Error al generar el reporte mensual:', err);
             return res.status(500).json({ error: 'Error al generar el reporte mensual' });
         }
 
-        res.json(rows); // Devuelve los datos agrupados por día
+        res.json(rows);
     });
 });
+
+
 // Endpoint para obtener cumplimiento
 app.get('/api/cumplimiento', (req, res) => {
     const { mesReporte } = req.query;
@@ -1125,7 +1139,6 @@ app.get('/api/cooperativas', (req, res) => {
         res.status(500).json({ error: 'Error al obtener cooperativas' });
     }
 });
-
 app.get('/api/get-num-ticket/:tabla', (req, res) => {
     const { tabla } = req.params;
 
@@ -1133,10 +1146,9 @@ app.get('/api/get-num-ticket/:tabla', (req, res) => {
     if (tabla !== 'REGISTRO' && tabla !== 'REGISTRO_EXTRA') {
         return res.status(400).json({ error: 'Tabla no válida' });
     }
-    // Año actual
-    const currentYear = new Date().getFullYear();
-    // Consulta SQL
-    const query = `SELECT MAX(CAST(NUM_TICKET AS INTEGER)) + 1 AS NumeroMayorTicket FROM ${tabla} WHERE strftime('%Y', FECHA) = "${currentYear}"`;
+
+    // Consulta SQL para obtener el máximo número de ticket
+    const query = `SELECT MAX(CAST(NUM_TICKET AS INTEGER)) + 1 AS NumeroMayorTicket FROM ${tabla}`;
 
     db.all(query, [], (err, rows) => {
         if (err) {
@@ -1145,6 +1157,13 @@ app.get('/api/get-num-ticket/:tabla', (req, res) => {
         }
         // Verifica que haya filas en el resultado
         const result = rows[0];
-        res.json(result || { MINIMO_NUM_TICKET: null });
+        let nuevoTicket = result ? result.NumeroMayorTicket : 1;
+
+        // Si el número de ticket es mayor a 40,000, reinicia el contador
+        if (nuevoTicket > 40000) {
+            nuevoTicket = 1; // Reinicia el contador
+        }
+
+        res.json({ NumeroMayorTicket: nuevoTicket });
     });
 });

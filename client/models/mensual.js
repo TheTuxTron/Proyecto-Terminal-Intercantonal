@@ -10,6 +10,24 @@ function toggleTable(className) {
         selectedTable.style.display = 'block';
     }
 }
+// Función para cargar las cooperativas
+async function cargarCooperativas() {
+    try {
+        const response = await fetch("/api/cooperativas");
+
+        if (!response.ok) {
+            throw new Error(`Error al obtener cooperativas: ${response.statusText}`);
+        }
+
+        const cooperativas = await response.json();
+
+        return cooperativas;
+    } catch (error) {
+        alert("No se pudieron cargar las cooperativas.");
+        return [];
+    }
+}
+
 
 async function cargarDisco() {
     const mes = document.getElementById("mesReporte").value; // Formato: YYYY-MM
@@ -18,24 +36,99 @@ async function cargarDisco() {
         return;
     }
 
-    try {
-        // Solicitar datos de la API
-        const response = await fetch(`/api/mensual-disco?mes=${mes}`);
-        if (!response.ok) {
-            throw new Error("Error al obtener el reporte mensual");
-        }
-        
-        const data = await response.json();
+    // Contenedor donde se mostrará el select
+    const containerDisco = document.querySelector(".disco");
 
-        // Pasar el valor del mes al renderizador
-        renderizarDisco(data, mes);
-    } catch (error) {
-        console.error("Error:", error);
-        alert("No se pudo cargar el informe. Por favor, intente nuevamente.");
+    // Verificar si el contenedor existe
+    if (!containerDisco) {
+        console.error("El contenedor de disco no existe.");
+        return;
     }
+
+    // Crear el label y select solo una vez
+    let labelCooperativa = document.querySelector("label[for='cooperativaSelect']");
+    let selectCooperativa = document.getElementById("cooperativaSelect");
+
+    if (!labelCooperativa) {
+        labelCooperativa = document.createElement("label");
+        labelCooperativa.setAttribute("for", "cooperativaSelect");
+        labelCooperativa.textContent = "Seleccione la cooperativa: ";
+
+        // Agregar el label primero (antes del select)
+        containerDisco.appendChild(labelCooperativa);
+    }
+
+    if (!selectCooperativa) {
+        selectCooperativa = document.createElement("select");
+        selectCooperativa.id = "cooperativaSelect";
+
+        // Agregar el select después del label
+        containerDisco.appendChild(selectCooperativa);
+    }
+
+    // Llamar a cargar las cooperativas
+    const cooperativas = await cargarCooperativas();
+
+    if (cooperativas.length > 0) {
+        // Limpiar las opciones anteriores
+        selectCooperativa.innerHTML = "";
+
+        // Crear la opción predeterminada "TODAS LAS COOPERATIVAS"
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "--------------";
+        defaultOption.disabled = true;  // Deshabilitar la opción para evitar que sea seleccionada
+        defaultOption.selected = true;  // Seleccionar esta opción por defecto
+        selectCooperativa.appendChild(defaultOption);
+
+        const todas = document.createElement("option");
+        todas.value = "";
+        todas.textContent = "TODAS LAS COOPERATIVAS";
+        selectCooperativa.appendChild(todas);
+
+        // Agregar las cooperativas
+        cooperativas.forEach(({ COOPERATIVA }) => {
+            const option = document.createElement("option");
+            option.value = COOPERATIVA;
+            option.textContent = COOPERATIVA;
+            selectCooperativa.appendChild(option);
+        });
+
+    } else {
+        console.error("No se cargaron cooperativas.");
+    }
+
+    // Escuchar el cambio de cooperativa
+    selectCooperativa.addEventListener('change', async function () {
+        // Obtener la cooperativa seleccionada
+        const cooperativa = selectCooperativa.value;
+
+        try {
+            // Solicitar datos de la API incluyendo la cooperativa seleccionada
+            const url = `/api/mensual-disco?mes=${mes}${cooperativa ? `&cooperativa=${cooperativa}` : ""}`;
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error("Error al obtener el reporte mensual");
+            }
+            const data = await response.json();
+
+            // Verificar si la respuesta contiene datos válidos
+            if (data && Array.isArray(data) && data.length > 0) {
+                // Pasar el valor del mes y la cooperativa al renderizador
+                renderizarDisco(data, mes, cooperativa);
+            } else {
+                renderizarDisco([], mes, cooperativa);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("No se pudo cargar el informe. Por favor, intente nuevamente.");
+        }
+    });
 }
 
-function renderizarDisco(data, mes) {
+
+function renderizarDisco(data, mes, cooperativa) {
     // Obtener el nombre del mes desde el valor YYYY-MM
     const meses = [
         "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
@@ -43,9 +136,26 @@ function renderizarDisco(data, mes) {
     ];
     const [anio, mesNumero] = mes.split("-"); // Dividir en "YYYY" y "MM"
     const mesNombre = meses[parseInt(mesNumero, 10) - 1] || "Mes desconocido";
-
-    // Contenedor donde se insertará la tabla
     const container = document.querySelector(".disco");
+
+     // Limpiar tabla anterior si existe
+ 
+     // Eliminar el mensaje previo si lo hay
+     const existingMessage = container.querySelector(".disco");
+     if (existingMessage) {
+         existingMessage.remove();
+     }
+     // Verificar si hay datos
+    if (!data || data.length === 0) {
+        // Crear el mensaje si no hay datos
+        const message = document.createElement("p");
+        message.textContent = "No hay datos disponibles para la cooperativa seleccionada.";
+        message.style.textAlign = "center"; // Centrar el mensaje
+        container.appendChild(message);
+        return;
+    }
+     
+    // Contenedor donde se insertará la tabla
     const existingTable = document.querySelector("table");
     if (existingTable) existingTable.remove(); // Eliminar tabla existente si ya hay una
 
@@ -60,7 +170,7 @@ function renderizarDisco(data, mes) {
     const titleRow = document.createElement("tr");
     const titleCell = document.createElement("th");
     titleCell.setAttribute("colspan", "6");
-    titleCell.textContent = `TERMINAL INTERCANTONAL DE RIOBAMBA - INFORME DE REGISTRO DE FRECUENCIAS DE ${mesNombre} ${anio}`;
+    titleCell.textContent = `TERMINAL INTERCANTONAL DE RIOBAMBA - INFORME DE REGISTRO DE FRECUENCIAS DE ${cooperativa} ${mesNombre} ${anio}`;
     titleCell.classList.add("table-title");
     titleRow.appendChild(titleCell);
     thead.appendChild(titleRow);
@@ -296,23 +406,7 @@ function renderizarValores(data, mes) {
     // Insertar tabla en el contenedor
     container.appendChild(table);
 }
-// Función para cargar las cooperativas
-async function cargarCooperativas() {
-    try {
-        const response = await fetch("/api/cooperativas");
 
-        if (!response.ok) {
-            throw new Error(`Error al obtener cooperativas: ${response.statusText}`);
-        }
-
-        const cooperativas = await response.json();
-
-        return cooperativas;
-    } catch (error) {
-        alert("No se pudieron cargar las cooperativas.");
-        return [];
-    }
-}
 
 async function cargarPasajeros() {
     const mes = document.getElementById("mesReporte").value;
@@ -322,74 +416,7 @@ async function cargarPasajeros() {
         alert("Por favor, seleccione un mes para generar el reporte.");
         return;
     }
-    
-
-    // Contenedor donde se mostrará el select
-    const containerPasajeros = document.querySelector(".pasajeros");
-
-    // Verificar si el contenedor existe
-    if (!containerPasajeros) {
-        console.error("El contenedor de pasajeros no existe.");
-        return;
-    }
-
-    // Crear el label y select solo una vez
-    let labelCooperativa = document.querySelector("label[for='cooperativaSelect']");
-    let selectCooperativa = document.getElementById("cooperativaSelect");
-
-    if (!labelCooperativa) {
-        labelCooperativa = document.createElement("label");
-        labelCooperativa.setAttribute("for", "cooperativaSelect");
-        labelCooperativa.textContent = "Seleccione la cooperativa: ";
-
-        // Agregar el label primero (antes del select)
-        containerPasajeros.appendChild(labelCooperativa);
-    }
-
-    if (!selectCooperativa) {
-        selectCooperativa = document.createElement("select");
-        selectCooperativa.id = "cooperativaSelect";
-
-        // Agregar el select después del label
-        containerPasajeros.appendChild(selectCooperativa);
-    }
-
-
-    // Llamar a cargar las cooperativas
-    const cooperativas = await cargarCooperativas();
-
-    if (cooperativas.length > 0) {
-        // Limpiar las opciones anteriores
-        selectCooperativa.innerHTML = "";
-    
-        // Crear la opción predeterminada "TODAS LAS COOPERATIVAS"
-        const defaultOption = document.createElement("option");
-        defaultOption.value = "";
-        defaultOption.textContent = "--------------";
-        defaultOption.disabled = true;  // Deshabilitar la opción para evitar que sea seleccionada
-        defaultOption.selected = true;  // Seleccionar esta opción por defecto
-        selectCooperativa.appendChild(defaultOption);
-        const todas = document.createElement("option");
-        todas.value = "";
-        todas.textContent = "TODAS LAS COOPERATIVAS";
-        selectCooperativa.appendChild(todas);
-        // Agregar las cooperativas
-        cooperativas.forEach(({ COOPERATIVA }) => {
-            const option = document.createElement("option");
-            option.value = COOPERATIVA;
-            option.textContent = COOPERATIVA;
-            selectCooperativa.appendChild(option);
-        });
-
-    } else {
-        console.error("No se cargaron cooperativas.");
-    }
-    
-
-    // Escuchar el cambio de cooperativa
-    selectCooperativa.addEventListener('change', async function () {
-        // Obtener la cooperativa seleccionada
-        const cooperativa = selectCooperativa.value;
+        const cooperativa = "";
 
         // Obtener los datos de pasajeros
         try {
@@ -408,7 +435,6 @@ async function cargarPasajeros() {
             console.error("Error al cargar pasajeros:", error);
             alert("No se pudo cargar el informe. Por favor, intente nuevamente.");
         }
-    });
 }
 
 function renderizarPasajeros(data, mes) {
@@ -421,6 +447,8 @@ function renderizarPasajeros(data, mes) {
     // Validar el formato de `mes` y extraer año y mes
     const [anio, mesNumero] = mes.split("-"); // Dividir en "YYYY" y "MM"
     const mesNombre = meses[parseInt(mesNumero, 10) - 1] || "Mes desconocido";
+    // Obtener el número total de días del mes
+    const diasDelMes = new Date(anio, mesNumero, 0).getDate(); // Día 0 del mes siguiente da el último día del mes actual
 
     // Limpiar tabla anterior si existe
     const existingTable = container.querySelector("table");
@@ -487,7 +515,6 @@ function renderizarPasajeros(data, mes) {
         });
     }
 
-    // Agregar la fila con la sumatoria total de pasajeros
     const footerRow = document.createElement("tr");
     footerRow.innerHTML = `
         <td colspan="2"><strong>Total Pasajeros</strong></td>
@@ -498,6 +525,21 @@ function renderizarPasajeros(data, mes) {
     footerRow.style.color = 'white';
     footerRow.style.fontWeight = 'bold';
     tbody.appendChild(footerRow);
+
+    const promedioDiario = diasDelMes > 0 ? (totalPasajeros / diasDelMes).toFixed(2) : 0;
+
+    // Agregar la fila con el promedio diario
+    const averageRow = document.createElement("tr");
+    averageRow.innerHTML = `
+        <td colspan="2"><strong>Promedio por Día</strong></td>
+        <td><strong>${promedioDiario}</strong></td>
+    `;
+
+    averageRow.classList.add("average-row");
+    averageRow.style.backgroundColor = '#007bff';
+    averageRow.style.color = 'white';
+    averageRow.style.fontWeight = 'bold';
+    tbody.appendChild(averageRow);
 
     table.appendChild(tbody);
 
