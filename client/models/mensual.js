@@ -359,7 +359,7 @@ function renderizarValores(data, mes) {
     // Título principal
     const titleRow = document.createElement("tr");
     const titleCell = document.createElement("th");
-    titleCell.setAttribute("colspan", "6");
+    titleCell.setAttribute("colspan", "11");
     titleCell.textContent = `TERMINAL INTERCANTONAL DE RIOBAMBA - INFORME DE VALORES RECAUDADOS DE ${mesNombre} ${anio}`;
     titleCell.classList.add("table-title");
     titleRow.appendChild(titleCell);
@@ -370,10 +370,15 @@ function renderizarValores(data, mes) {
     headerRow.innerHTML = ` 
         <th>Fecha</th>
         <th>Turno Mañana Normal</th>
-        <th>Turno Mañana Extra</th>
         <th>Turno Tarde Normal</th>
+        <th>Turno Mañana Extra</th>
         <th>Turno Tarde Extra</th>
-        <th>Total Diario Valores</th>
+        <th>Total Diario Recaudado</th>
+        <th>Tickets Normales Desde</th>
+        <th>Tickets Normales Hasta</th>
+        <th>Tickets Extra Desde</th>
+        <th>Tickets Extra Hasta</th>
+        <th>Total Tickets Emitidos</th>
     `;
     thead.appendChild(headerRow);
 
@@ -398,6 +403,11 @@ function renderizarValores(data, mes) {
             <td>${row["TURNO TARDE NORMAL"]}</td>
             <td>${row["TURNO TARDE EXTRA"]}</td>
             <td>${row["TOTAL DIARIO VALORES"]}</td>
+            <td>${row["DESDE NORMAL"]}</td>
+            <td>${row["HASTA NORMAL"]}</td>
+            <td>${row["DESDE EXTRA"]}</td>
+            <td>${row["HASTA EXTRA"]}</td>
+            <td>${row["TOTAL DIARIO TICKETS"]}</td>
         `;
         tbody.appendChild(tr);
     });
