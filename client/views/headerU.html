@@ -25,13 +25,14 @@
   
       <!-- Selector de Jornada -->
       <label for="jornada">Jornada:</label>
-      <select id="jornada" name="jornada">
-        <option value="MAÑANA (05H00-13H00)">Mañana</option>
-        <option value="TARDE (13H00-21H00)">Tarde</option>
-      </select>
-  
-      <br><br>
-      <button onclick="generarInformeDiario()">Generar Informe</button>
+    <select id="jornada" name="jornada">
+      <option value="">--------------</option>
+      <option value="MAÑANA (05H00-13H00)">Mañana</option>
+      <option value="TARDE (13H00-21H00)">Tarde</option>
+    </select>
+
+        <br><br>
+      <button id="informeD" class="informeD" onclick="generarInformeDiario()">Generar Informe</button>
     </div>
   </div>
 </header>

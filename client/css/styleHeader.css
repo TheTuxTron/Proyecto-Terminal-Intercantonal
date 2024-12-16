@@ -170,3 +170,21 @@ body {
   text-decoration: none;
   cursor: pointer;
 }
+
+.informeD{
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: bolder;
+  color: #007bff;
+  background-color: #fff;
+  border-color: #007bff;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#informeD:hover {
+  background-color: #0056b3;
+  color: #fff;
+}

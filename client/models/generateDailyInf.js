@@ -54,12 +54,26 @@ async function generarInformeDiario() {
         alert("No hay datos para mostrar en el informe.");
         return;
     }
+    const pageWidth = doc.internal.pageSize.getWidth();
 
+    // Texto a centrar
+    const text1 = "TERMINAL INTERCANTONAL DE RIOBAMBA";
+    const text2 = "Informe Diario de Recaudación de Especies Valoradas";
+    
+    // Calcular las posiciones centradas
+    const text1Width = doc.getTextWidth(text1);
+    const text2Width = doc.getTextWidth(text2);
+    const text1X = (pageWidth - text1Width) / 2;
+    const text2X = (pageWidth - text2Width) / 2;
+    
+    // Dibujar el texto centrado
+    doc.text(text1, text1X, 40);
+    doc.text(text2, text2X, 50);
     // Agregar contenido al PDF
     doc.setFontSize(12);
-    doc.text("Informe Diario de Recaudación de Especies Valoradas", 45, 40);
-    doc.text("Fecha seleccionada: " + fechaSeleccionada, 10, 50);
-    doc.text("Jornada: " + jornadaSeleccionada, 10, 60);
+    doc.text("Fecha: " + fechaSeleccionada, 10, 60);
+    doc.text("Jornada: " + jornadaSeleccionada, 10, 70);
+    doc.text("De: " + localStorage.getItem("nombre"), 10, 80);
 
     // Encabezado de la tabla
     const headers = [
@@ -100,7 +114,7 @@ async function generarInformeDiario() {
             head: headers,
             headStyles: { fillColor: [0, 123, 255] },
             body: rows,
-            startY: 70,
+            startY: 90,
             styles: {
                 fontSize: 8,
             }
@@ -135,7 +149,7 @@ async function generarInformeDiario() {
 
     // Inicializamos currentY para controlar el espaciado
     let currentY = finalY; // Usa la posición actual o la finalY inicial
-    currentY += 20;
+    currentY += 10;
     // Firma del Usuario
     doc.setFontSize(10);
     doc.text("__________________________________________________", 10, currentY); // Línea de firma
