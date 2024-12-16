@@ -2,8 +2,16 @@
 function mostrarModal() {
     document.getElementById("modal").style.display = "block";
     // Establecer la fecha actual como valor por defecto
-    const fechaActual = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
-    document.getElementById("fecha").value = fechaActual;
+    // Configuración de fecha
+    const hoy = new Date();
+
+    // Extraer año, mes y día en la zona horaria local
+    const anio = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0'); // Los meses empiezan en 0
+    const dia = String(hoy.getDate()).padStart(2, '0'); // Día local
+    const fechaActualM = `${anio}-${mes}-${dia}`;
+
+    document.getElementById("fechaM").value = fechaActualM;
 }
   
 // Cerrar la ventana modal
@@ -23,7 +31,7 @@ async function generarInformeDiario() {
         alert("No se pudo cargar la imagen.");
     }
 
-    const fechaSeleccionada = document.getElementById("fecha").value;
+    const fechaSeleccionada = document.getElementById("fechaM").value;
     const jornadaSeleccionada = document.getElementById("jornada").value;
 
     if (!fechaSeleccionada || !jornadaSeleccionada) {
@@ -33,10 +41,10 @@ async function generarInformeDiario() {
     const userId = localStorage.getItem('nombre');
     console.log(`fecha: ${fechaSeleccionada}, jornada: ${jornadaSeleccionada}`);
 
-    const fecha = new Date(fechaSeleccionada);
-    const opcionesFecha = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-    const fechaFormateada = fecha.toLocaleDateString('es-ES', opcionesFecha);
-    const hora = fecha.toLocaleTimeString('es-ES');
+    const fechaM = new Date(fechaSeleccionada);
+    const opcionesFechaM = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+    const fechaFormateada = fechaM.toLocaleDateString('es-ES', opcionesFechaM);
+    const hora = fechaM.toLocaleTimeString('es-ES');
 
     // Obtener los datos del informe
     const data = await obtenerDatosInforme(userId, fechaSeleccionada);
@@ -55,7 +63,7 @@ async function generarInformeDiario() {
 
     // Encabezado de la tabla
     const headers = [
-        ["TASA", "DESDE", "HASTA", "NUM TICKETS", "VALOR UNITARIO", "TOTAL"]
+        ["FRECUENCIAS", "DESDE", "HASTA", "NUM TICKETS", "VALOR UNITARIO", "TOTAL"]
     ];
 
     // Mapeamos los datos para que coincidan con las columnas del PDF
@@ -161,14 +169,14 @@ async function cargarImagenBase64(url) {
 }
 
 // Función para obtener los datos del informe
-async function obtenerDatosInforme(userId, fecha) {
-    if (!userId || !fecha) {
+async function obtenerDatosInforme(userId, fechaM) {
+    if (!userId || !fechaM) {
         alert("User ID y fecha son requeridos.");
         return [];
     }
 
     try {
-        const response = await fetch(`/api/informe?userId=${userId}&fecha=${fecha}`);
+        const response = await fetch(`/api/informe?userId=${userId}&fecha=${fechaM}`);
         if (response.ok) {
             const data = await response.json();
             return data;

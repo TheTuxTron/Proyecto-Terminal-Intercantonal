@@ -6,6 +6,7 @@ document.getElementById('registroForm').addEventListener('submit', async functio
     const destino = document.getElementById('parroquia').value;
     let hora = document.getElementById('hora').value;
     const fecha = document.getElementById('fecha').value;
+    console.log("Fecha capturada:", fecha); // Debug
     const frecuencia = document.getElementById('frecuencia').value;
     const numPasajeros = document.getElementById('numPasajeros').value;
     const tipoFrecuencia = document.getElementById('tipoFrecuencia').value;
