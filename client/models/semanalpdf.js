@@ -130,24 +130,46 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
         currentY += 10; // Espaciado entre líneas
         doc.line(margin, currentY, margin + anchoLinea, currentY); // Línea horizontal
     }
+    currentY +=20; 
 
     const responsable = await obtenerResponsables();
-    if (currentY + 50 > pageHeight - margin) {
-        doc.addPage(); // Nueva página si no hay espacio
-        agregarEncabezado(); // Repetir encabezado
-    }
-    currentY = pageHeight - 50; // Posición cercana al final de la página
-    doc.setFontSize(10);
 
+    // Continuar con `currentY` desde la posición actual
+    doc.setFontSize(10);
+    // Verificar si hay espacio suficiente en la página
+    if (currentY + 10 > pageHeight - margin) {
+        doc.addPage(); // Nueva página si no hay espacio
+        currentY = margin; // Reiniciar la posición de `currentY` al margen superior
+    }
+
+    // Agregar firmas de responsables
     responsable.forEach((NOMBRE, index) => {
-        doc.text(`Firma de Administrador: ${NOMBRE+'__________________________________' || '__________________________________'}`, margin, currentY);
+        doc.text(
+            `Firma de Administrador: ${NOMBRE ? NOMBRE + ' __________________________________' : '__________________________________'}`,
+            margin,
+            currentY
+        );
         currentY += 20; // Espacio entre firmas
     });
+    
+        // Verificar si hay espacio suficiente en la página
+        if (currentY + 20 > pageHeight - margin) {
+            doc.addPage(); // Nueva página si no hay espacio
+            currentY = margin; // Reiniciar la posición de `currentY` al margen superior
+        }
 
+    // Agregar firmas de secretarias
     const secretaria = await obtenerSecretaria();
     secretaria.forEach((NOMBRE, index) => {
-        doc.text(`Firma de Secretaria: ${NOMBRE+'__________________________________' || '__________________________________'}`, margin, currentY);
+        doc.text(
+            `Firma de Secretaria: ${NOMBRE ? NOMBRE + ' __________________________________' : '__________________________________'}`,
+            margin,
+            currentY
+        );
+        currentY += 20; // Espacio entre firmas
     });
+    
+
     // Guardar el PDF
     doc.save(`Informe_Frecuencias_${fechaInicioInput.value}_to_${fechaFinInput.value}.pdf`);
 });

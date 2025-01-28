@@ -116,24 +116,49 @@ document.getElementById('generarPdfBtn').addEventListener('click', async () => {
         doc.line(margin, currentY, margin + anchoLinea, currentY); // Línea horizontal
     }
 
+currentY +=20;
+
     const responsable = await obtenerResponsables();
-    if (currentY + 50 > pageHeight - margin) {
-        doc.addPage();
-        agregarEncabezado();
-    }
-    currentY = pageHeight - 50;
+
+    // Continuar con `currentY` desde la posición actual
     doc.setFontSize(10);
-
-    responsable.forEach((NOMBRE) => {
-        doc.text(`Firma de Administrador: ${NOMBRE + '__________________________________' || '__________________________________'}`, margin, currentY);
-        currentY += 20;
+            // Verificar si hay espacio suficiente en la página
+            if (currentY + 20 > pageHeight - margin) {
+                doc.addPage(); // Nueva página si no hay espacio
+                currentY = margin; // Reiniciar la posición de `currentY` al margen superior
+            }
+    
+    // Agregar firmas de responsables
+    responsable.forEach((NOMBRE, index) => {
+        doc.text(
+            `Firma de Administrador: ${NOMBRE ? NOMBRE + ' __________________________________' : '__________________________________'}`,
+            margin,
+            currentY
+        );
+        currentY += 20; // Espacio entre firmas
     });
-
+            // Verificar si hay espacio suficiente en la página
+            if (currentY + 20 > pageHeight - margin) {
+                doc.addPage(); // Nueva página si no hay espacio
+                currentY = margin; // Reiniciar la posición de `currentY` al margen superior
+            }
+    
+    // Agregar firmas de secretarias
     const secretaria = await obtenerSecretaria();
-    secretaria.forEach((NOMBRE) => {
-        doc.text(`Firma de Secretaria: ${NOMBRE + '__________________________________' || '__________________________________'}`, margin, currentY);
+    secretaria.forEach((NOMBRE, index) => {
+        doc.text(
+            `Firma de Secretaria: ${NOMBRE ? NOMBRE + ' __________________________________' : '__________________________________'}`,
+            margin,
+            currentY
+        );
+        currentY += 20; // Espacio entre firmas
     });
-
+    
+    // Verificar si hay espacio suficiente en la página
+    if (currentY + 20 > pageHeight - margin) {
+        doc.addPage(); // Nueva página si no hay espacio
+        currentY = margin; // Reiniciar la posición de `currentY` al margen superior
+    }
     // Guardar PDF con el nombre de la tabla
     doc.save(`${nombrePdf}.pdf`);
 });

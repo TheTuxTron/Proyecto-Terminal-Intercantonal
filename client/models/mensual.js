@@ -370,8 +370,8 @@ function renderizarValores(data, mes) {
     headerRow.innerHTML = ` 
         <th>Fecha</th>
         <th>Turno Mañana Normal</th>
-        <th>Turno Tarde Normal</th>
         <th>Turno Mañana Extra</th>
+        <th>Turno Tarde Normal</th>
         <th>Turno Tarde Extra</th>
         <th>Total Diario Recaudado</th>
         <th>Tickets Normales Desde</th>

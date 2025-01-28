@@ -115,7 +115,7 @@ app.post('/api/registrarViaje', (req, res) => {
     const { cooperativa, usuario, destino, hora, fecha, frecuencia, numPasajeros, tipoFrecuencia, valor, numTicket } = req.body;
 
     // Definir la tabla de destino según el tipo de frecuencia
-    const table = tipoFrecuencia === "NORMAL" ? "REGISTRO" : "REGISTRO_EXTRA";
+    const table = tipoFrecuencia === "NORMAL" ? "REGISTRO1" : "REGISTRO_EXTRA";
 
     // Lógica de registro: validar si el viaje ya está registrado en la tabla correspondiente
     db.get(`SELECT * FROM ${table} WHERE COOPERATIVA = ? AND HORA = ? AND FECHA = ? AND USUARIO = ? AND NUM_TICKET = ?`, 
@@ -1175,15 +1175,18 @@ app.get('/api/get-num-ticket/:tabla', (req, res) => {
             console.error('Error al obtener el mayor NUM_TICKET:', err.message);
             return res.status(500).json({ error: 'Error al obtener datos' });
         }
-        // Verifica que haya filas en el resultado
-        const result = rows[0];
-        let nuevoTicket = result ? result.NumeroMayorTicket : 1;
 
-        // Si el número de ticket es mayor a 40,000, reinicia el contador
-        if (nuevoTicket > 40000) {
-            nuevoTicket = 1; // Reinicia el contador
+        // Verificar si la consulta devolvió resultados
+        const result = rows.length > 0 ? rows[0] : null;
+        let nuevoTicket = result && result.NumeroMayorTicket ? result.NumeroMayorTicket : 0;
+
+        // Si el número supera el límite (80,000), reinicia a 1
+        if (nuevoTicket > 80000) {
+	//Este codigo se hizo en base a que funcione para los 80000 tickets impresos, cuando llegue a este numero, se debe reiniciar el contador de la base de datos
+	// haciendo tambien un respaldo de esos datos, para que los informes funcionen. En caso de encontrar una mejor lógica para el reinicio apliquela.
+		alert("Se exedio el número de tickets impresos, llamar a soporte técnico");
         }
 
-        res.json({ NumeroMayorTicket: nuevoTicket });
+        res.json({ NumeroMayorTicket: nuevoTicket});
     });
 });
