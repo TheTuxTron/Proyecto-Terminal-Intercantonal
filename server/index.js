@@ -115,7 +115,7 @@ app.post('/api/registrarViaje', (req, res) => {
     const { cooperativa, usuario, destino, hora, fecha, frecuencia, numPasajeros, tipoFrecuencia, valor, numTicket } = req.body;
 
     // Definir la tabla de destino según el tipo de frecuencia
-    const table = tipoFrecuencia === "NORMAL" ? "REGISTRO1" : "REGISTRO_EXTRA";
+    const table = tipoFrecuencia === "NORMAL" ? "REGISTRO" : "REGISTRO_EXTRA";
 
     // Lógica de registro: validar si el viaje ya está registrado en la tabla correspondiente
     db.get(`SELECT * FROM ${table} WHERE COOPERATIVA = ? AND HORA = ? AND FECHA = ? AND USUARIO = ? AND NUM_TICKET = ?`, 
